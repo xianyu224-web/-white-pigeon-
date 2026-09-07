@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宿舍管理系统 - 学生管理</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- 引入Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- 引入模拟数据模块 -->
+  <script src="mock-data.js"></script>
+
+  <!-- 配置Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#000000',
+            secondary: '#ffffff',
+            dark: '#111111',
+            darker: '#0a0a0a',
+            'dark-card': '#1a1a1a',
+            'light-gray': '#f5f5f5',
+            'medium-gray': '#666666',
+            'border-gray': '#e0e0e0',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .scrollbar-thin {
+        scrollbar-width: thin;
+      }
+      .scrollbar-thin::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+      }
+      .scrollbar-thin::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 2px;
+      }
+      .ins-border {
+        border: 2px solid #000;
+      }
+      .ins-shadow {
+        box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+      }
+      .ins-shadow-sm {
+        box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+      }
+      .ins-hover:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+      }
+      .status-in {
+        background-color: #d1fae5;
+        color: #065f46;
+        border-color: #a7f3d0;
+      }
+      .status-out {
+        background-color: #fee2e2;
+        color: #991b1b;
+        border-color: #fecaca;
+      }
+      .status-unassigned {
+        background-color: #f3f4f6;
+        color: #374151;
+        border-color: #e5e7eb;
+      }
+    }
+  </style>
+
+  <!-- 引入字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-sans bg-white min-h-screen text-gray-900 scrollbar-thin">
+
+<!-- 导航栏 -->
+<header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-border-gray ins-shadow-sm">
+  <div class="container mx-auto px-4">
+    <div class="flex items-center justify-between h-16">
+      <!-- 左侧Logo -->
+      <div class="flex items-center">
+        <div class="flex items-center">
+          <i class="fa fa-building text-2xl text-black mr-2"></i>
+          <span class="text-xl font-bold text-black">宿舍管理系统</span>
+        </div>
+
+        <!-- 导航链接 - 桌面版 -->
+        <nav class="hidden md:ml-10 md:flex md:space-x-8">
+          <a href="interface.html" class="text-black border-b-2 border-black px-1 pt-1 font-medium">学生管理</a>
+          <a href="dorm.html" class="text-medium-gray hover:text-black transition px-1 pt-1 font-medium">宿舍管理</a>
+          <a href="dormadmin.html" class="text-medium-gray hover:text-black transition px-1 pt-1 font-medium">宿管管理</a>
+        </nav>
+      </div>
+
+      <!-- 右侧用户区域 -->
+      <div class="flex items-center">
+        <!-- 用户头像 -->
+        <div class="ml-4 relative">
+          <div class="flex items-center">
+            <img class="h-8 w-8 rounded-full border border-black/30" src="https://picsum.photos/200/200?random=1" alt="用户头像">
+            <span id="loginUser" class="ml-2 hidden md:block text-black font-medium">管理员</span>
+            <i class="fa fa-chevron-down ml-1 text-xs text-medium-gray"></i>
+          </div>
+        </div>
+
+        <!-- 退出登录 -->
+        <button id="logOut" class="ml-4 p-2 rounded-full text-medium-gray hover:text-black hover:bg-light-gray transition">
+          <i class="fa fa-sign-out"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- 主内容区 -->
+<main class="container mx-auto px-4 py-6">
+  <!-- 页面标题 -->
+  <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
+    <div>
+      <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-black">学生管理</h1>
+      <p class="text-medium-gray text-sm mt-1">管理系统中的所有学生信息</p>
+    </div>
+
+    <button id="addStudentBtn" class="mt-4 md:mt-0 px-4 py-2 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition flex items-center ins-shadow-sm ins-hover">
+      <i class="fa fa-plus mr-2"></i> 新增学生
+    </button>
+  </div>
+
+  <!-- 搜索和筛选区域 -->
+  <div class="bg-white rounded-xl p-4 mb-6 border border-border-gray ins-shadow-sm">
+    <form id="searchForm" class="space-y-4">
+      <!-- 搜索框 -->
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="relative flex-1">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-medium-gray">
+                        <i class="fa fa-search"></i>
+                    </span>
+          <input type="text" id="searchKeyword"
+                 class="w-full pl-10 pr-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black"
+                 placeholder="搜索学号、姓名、班级...">
+        </div>
+
+        <div class="flex gap-4">
+          <select id="genderFilter" class="px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
+            <option value="">所有性别</option>
+            <option value="男">男</option>
+            <option value="女">女</option>
+          </select>
+
+          <select id="buildingFilter" class="px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
+            <option value="">所有楼栋</option>
+            <option value="A栋">A栋</option>
+            <option value="B栋">B栋</option>
+            <option value="C栋">C栋</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 高级筛选 -->
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex-1">
+          <label class="block text-xs uppercase tracking-wider text-medium-gray mb-1">班级筛选</label>
+          <input type="text" id="classFilter" placeholder="输入班级名称" class="w-full px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
+        </div>
+
+        <div class="flex-1">
+          <label class="block text-xs uppercase tracking-wider text-medium-gray mb-1">学生状态</label>
+          <select id="studentStatusFilter" class="w-full px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
+            <option value="">所有状态</option>
+            <option value="在校">在校</option>
+            <option value="退宿">退宿</option>
+            <option value="未分配">未分配宿舍</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 按钮组 -->
+      <div class="flex justify-end gap-3">
+        <button type="button" id="resetBtn" class="px-4 py-2 border border-border-gray rounded-lg hover:border-black hover:text-black transition ins-shadow-sm ins-hover">
+          重置
+        </button>
+        <button type="button" id="searchBtn" class="px-4 py-2 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition ins-shadow-sm ins-hover">
+          <i class="fa fa-search mr-1"></i> 查询
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 统计卡片 -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-xl p-4 border border-border-gray ins-shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-medium-gray">总学生数</p>
+          <h3 class="text-2xl font-bold text-black mt-1" id="totalStudents">0</h3>
+        </div>
+        <div class="w-12 h-12 bg-light-gray rounded-lg flex items-center justify-center">
+          <i class="fa fa-users text-xl text-black"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-4 border border-border-gray ins-shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-medium-gray">在校</p>
+          <h3 class="text-2xl font-bold text-green-600 mt-1" id="inStudents">0</h3>
+        </div>
+        <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
+          <i class="fa fa-home text-xl text-green-600"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-4 border border-border-gray ins-shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-medium-gray">退宿</p>
+          <h3 class="text-2xl font-bold text-red-600 mt-1" id="outStudents">0</h3>
+        </div>
+        <div class="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center">
+          <i class="fa fa-sign-out text-xl text-red-600"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-4 border border-border-gray ins-shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-medium-gray">未分配</p>
+          <h3 class="text-2xl font-bold text-gray-600 mt-1" id="unassignedStudents">0</h3>
+        </div>
+        <div class="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center">
+          <i class="fa fa-bed text-xl text-gray-600"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 学生列表 -->
+  <div class="bg-white rounded-xl border border-border-gray overflow-hidden ins-shadow-sm">
+    <!-- 列表头部 -->
+    <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-border-gray bg-light-gray text-sm font-medium text-medium-gray">
+      <div class="col-span-5 md:col-span-2">学生信息</div>
+      <div class="hidden md:block md:col-span-1">性别</div>
+      <div class="hidden md:block md:col-span-2">班级</div>
+      <div class="hidden md:block md:col-span-1">学号</div>
+      <div class="hidden lg:block lg:col-span-1">联系方式</div>
+      <div class="col-span-3 md:col-span-2">宿舍</div>
+      <div class="col-span-4 md:col-span-2">状态</div>
+      <div class="col-span-4 md:col-span-1 text-right">操作</div>
+    </div>
+
+    <!-- 列表内容 -->
+    <div class="divide-y divide-border-gray" id="studentList">
+      <!-- 学生数据会动态加载 -->
+    </div>
+
+    <!-- 分页 -->
+    <div class="px-6 py-4 border-t border-border-gray flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div class="text-sm text-medium-gray">
+        显示 <span class="text-black" id="pageStart">0</span> 到
+        <span class="text-black" id="pageEnd">0</span> 条，共
+        <span class="text-black" id="totalCount">0</span> 条记录
+      </div>
+
+      <div class="flex items-center">
+        <button id="prevPage" class="w-9 h-9 flex items-center justify-center rounded border border-border-gray text-medium-gray hover:border-black hover:text-black transition mr-1 ins-shadow-sm ins-hover">
+          <i class="fa fa-chevron-left text-xs"></i>
+        </button>
+        <button class="w-9 h-9 flex items-center justify-center rounded bg-black text-white font-medium mr-1 ins-shadow-sm" id="currentPage">1</button>
+        <button id="nextPage" class="w-9 h-9 flex items-center justify-center rounded border border-border-gray hover:border-black hover:text-black transition mr-1 ins-shadow-sm ins-hover">
+          <i class="fa fa-chevron-right text-xs"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- 页脚 -->
+<footer class="mt-8 border-t border-border-gray bg-white/50 py-4">
+  <div class="container mx-auto px-4 text-center text-xs text-medium-gray tracking-wider">
+    <p>© 2024 宿舍管理系统 | 版本 1.0.0 (演示版)</p>
+  </div>
+</footer>
+
+<!-- 添加学生模态框 -->
+<div id="addStudentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden p-4">
+  <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto ins-shadow mx-auto my-8 relative top-1/2 transform -translate-y-1/2">
+    <div class="p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-black">添加学生</h3>
+        <button id="closeModal" class="text-medium-gray hover:text-black">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+      <form id="addStudentForm" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">学号 *</label>
+            <input type="text" name="studentNo" required
+                   class="w-full px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">姓名 *</label>
+            <input type="text" name="name" required
+                   class="w-full px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">性别 *</label>
+            <select name="gender" required
+                    class="w-full px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
+              <option value="">请选择</option>
+              <option value="男">男</option>
+              <option value="女">女</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">班级 *</label>
+            <input type="text" name="className" required
+                   class="w-full px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">手机号</label>
+            <input type="tel" name="phone"
+                   class="w-full px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+            <input type="email" name="email"
+                   class="w-full px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">分配宿舍</label>
+            <select name="dormId" id="dormSelect"
+                    class="w-full px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
+              <option value="0">暂不分配</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">初始密码 *</label>
+            <input type="password" name="password" value="123456" required
+                   class="w-full px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end gap-3">
+          <button type="button" id="cancelAdd" class="px-4 py-2 border border-border-gray rounded-lg hover:border-black hover:text-black transition ins-shadow-sm ins-hover">
+            取消
+          </button>
+          <button type="submit" class="px-4 py-2 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition ins-shadow-sm ins-hover">
+            添加
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function() {
+    let currentPage = 1;
+    const pageSize = 10;
+    let currentFilters = {};
+    let allStudents = [];
+
+    // 检查登录状态
+    function checkLogin() {
+      const loginType = sessionStorage.getItem('loginType');
+      if (loginType !== 'dormAdmin') {
+        window.location.href = 'index.html';
+        return false;
+      }
+      return true;
+    }
+
+    // 显示加载提示
+    function showLoading() {
+      $('#studentList').html(`
+        <div class="flex justify-center items-center py-12">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+          <span class="ml-3 text-medium-gray">加载中...</span>
+        </div>
+      `);
+    }
+
+    // 显示错误信息
+    function showError(message) {
+      $('#studentList').html(`
+        <div class="text-center py-12">
+          <i class="fa fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+          <p class="text-medium-gray">${message}</p>
+          <button onclick="loadStudents()" class="mt-4 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition ins-shadow-sm ins-hover">
+            重试
+          </button>
+        </div>
+      `);
+    }
+
+    // 获取学生列表
+    async function loadStudents() {
+      showLoading();
+
+      try {
+        allStudents = await MockData.student.list();
+        console.log('获取到学生数据:', allStudents);
+        filterAndDisplayStudents();
+        updateStudentStats(allStudents);
+
+      } catch (error) {
+        console.error('加载学生列表失败:', error);
+        showError('加载学生列表失败，请刷新重试');
+      }
+    }
+
+    // 更新学生统计
+    function updateStudentStats(students) {
+      const total = students.length;
+      const inStudents = students.filter(s => s.status === '在校' || (s.dormId && s.dormId > 0 && s.status !== '退宿')).length;
+      const outStudents = students.filter(s => s.status === '退宿').length;
+      const unassignedStudents = students.filter(s => (!s.dormId || s.dormId <= 0) && s.status !== '退宿').length;
+
+      $('#totalStudents').text(total);
+      $('#inStudents').text(inStudents);
+      $('#outStudents').text(outStudents);
+      $('#unassignedStudents').text(unassignedStudents);
+    }
+
+    // 根据筛选条件过滤并显示学生
+    function filterAndDisplayStudents() {
+      let filteredStudents = [...allStudents];
+
+      // 应用筛选条件
+      if (currentFilters.keyword) {
+        const keyword = currentFilters.keyword.toLowerCase();
+        filteredStudents = filteredStudents.filter(student =>
+                (student.studentNo && student.studentNo.toLowerCase().includes(keyword)) ||
+                (student.name && student.name.toLowerCase().includes(keyword)) ||
+                (student.className && student.className.toLowerCase().includes(keyword))
+        );
+      }
+
+      if (currentFilters.gender) {
+        filteredStudents = filteredStudents.filter(student =>
+                student.gender === currentFilters.gender
+        );
+      }
+
+      if (currentFilters.building) {
+        filteredStudents = filteredStudents.filter(student =>
+                student.buildingNo === currentFilters.building
+        );
+      }
+
+      if (currentFilters.className) {
+        const classNameFilter = currentFilters.className.toLowerCase();
+        filteredStudents = filteredStudents.filter(student =>
+                student.className && student.className.toLowerCase().includes(classNameFilter)
+        );
+      }
+
+      if (currentFilters.studentStatus) {
+        if (currentFilters.studentStatus === '在校') {
+          filteredStudents = filteredStudents.filter(student =>
+                  student.status === '在校' || (!student.status && student.dormId && student.dormId > 0)
+          );
+        } else if (currentFilters.studentStatus === '退宿') {
+          filteredStudents = filteredStudents.filter(student =>
+                  student.status === '退宿'
+          );
+        } else if (currentFilters.studentStatus === '未分配') {
+          filteredStudents = filteredStudents.filter(student =>
+                  (!student.dormId || student.dormId <= 0) && student.status !== '退宿'
+          );
+        }
+      }
+
+      // 计算分页
+      const totalCount = filteredStudents.length;
+      const startIndex = (currentPage - 1) * pageSize;
+      const endIndex = Math.min(startIndex + pageSize, totalCount);
+      const pageStudents = filteredStudents.slice(startIndex, endIndex);
+
+      displayStudents(pageStudents);
+      updatePagination(totalCount, startIndex, endIndex);
+    }
+
+    // 显示学生列表
+    function displayStudents(students) {
+      if (!students || students.length === 0) {
+        $('#studentList').html(`
+          <div class="text-center py-12">
+            <i class="fa fa-users text-4xl text-gray-400 mb-4"></i>
+            <p class="text-medium-gray">暂无学生数据</p>
+          </div>
+        `);
+        return;
+      }
+
+      let html = '';
+      students.forEach((student, index) => {
+        // 确定学生状态
+        let statusClass, statusText;
+        if (student.status === '退宿') {
+          statusClass = 'status-out';
+          statusText = '退宿';
+        } else if (student.dormId && student.dormId > 0) {
+          statusClass = 'status-in';
+          statusText = '在校';
+        } else {
+          statusClass = 'status-unassigned';
+          statusText = '未分配';
+        }
+
+        // 处理可能的null/undefined值
+        const name = student.name || '未知姓名';
+        const gender = student.gender || '未知';
+        const className = student.className || '未知班级';
+        const studentNo = student.studentNo || '未知';
+        const phone = student.phone || '无';
+        const buildingNo = student.buildingNo || '';
+        const dormNo = student.dormNo || '';
+        const dormId = student.dormId || 0;
+        const studentId = student.studentId || student.id || index + 1;
+        const isMovedOut = student.status === '退宿';
+        const isAssigned = dormId > 0;
+        const canMoveOut = isAssigned && !isMovedOut;
+
+        html += `
+          <div class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-light-gray transition">
+            <div class="col-span-5 md:col-span-2 flex items-center">
+              <img src="https://picsum.photos/100/100?random=${studentId}" alt="学生头像"
+                   class="w-10 h-10 rounded-full border border-border-gray mr-3 object-cover">
+              <div>
+                <h3 class="font-medium text-black">${name}</h3>
+                <p class="text-xs text-medium-gray">${studentNo}</p>
+              </div>
+            </div>
+            <div class="hidden md:flex md:col-span-1 items-center">${gender}</div>
+            <div class="hidden md:flex md:col-span-2 items-center">${className}</div>
+            <div class="hidden md:flex md:col-span-1 items-center text-sm text-medium-gray">${studentNo}</div>
+            <div class="hidden lg:flex lg:col-span-1 items-center text-sm text-medium-gray">${phone}</div>
+            <div class="flex col-span-3 md:col-span-2 items-center text-sm text-medium-gray">
+              ${isAssigned ? buildingNo + ' ' + dormNo : '未分配'}
+            </div>
+            <div class="flex col-span-4 md:col-span-2 items-center">
+              <span class="px-2 py-1 text-xs rounded-full border ${statusClass}">${statusText}</span>
+            </div>
+            <div class="flex col-span-4 md:col-span-1 items-center justify-end gap-2">
+              <button onclick="editStudent(${studentId}, '${studentNo}')" class="p-1 text-black hover:text-gray-700" title="编辑">
+                <i class="fa fa-pencil text-sm"></i>
+              </button>
+              <button onclick="viewStudentDetail(${studentId}, '${studentNo}')" class="p-1 text-medium-gray hover:text-black" title="查看详情">
+                <i class="fa fa-eye text-sm"></i>
+              </button>
+              ${canMoveOut ? `
+              <button onclick="moveOutStudent(${studentId}, '${name}', this)"
+                      class="p-1 text-red-500 hover:text-red-700" title="退宿">
+                <i class="fa fa-sign-out text-sm"></i>
+              </button>
+              ` : ''}
+              <button onclick="deleteStudent(${studentId}, '${name}')" class="p-1 text-red-500 hover:text-red-700" title="删除">
+                <i class="fa fa-trash text-sm"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+
+      $('#studentList').html(html);
+    }
+
+    // 更新分页信息
+    function updatePagination(total, startIndex, endIndex) {
+      const pageStart = total > 0 ? startIndex + 1 : 0;
+      const pageEnd = Math.min(endIndex, total);
+
+      $('#pageStart').text(pageStart);
+      $('#pageEnd').text(pageEnd);
+      $('#totalCount').text(total);
+      $('#currentPage').text(currentPage);
+
+      // 更新分页按钮状态
+      $('#prevPage').prop('disabled', currentPage <= 1);
+      $('#nextPage').prop('disabled', endIndex >= total);
+    }
+
+    // 获取可用宿舍
+    async function loadAvailableDorms() {
+      try {
+        const dorms = await MockData.dorm.available();
+        let options = '<option value="0">暂不分配</option>';
+
+        if (dorms && Array.isArray(dorms)) {
+          dorms.forEach(dorm => {
+            const availableBeds = dorm.capacity - (dorm.currentCount || 0);
+            options += `<option value="${dorm.dormId || dorm.id}">${dorm.buildingNo || ''} ${dorm.dormNo || ''} (${availableBeds}个空床)</option>`;
+          });
+        }
+
+        $('#dormSelect').html(options);
+      } catch (error) {
+        console.error('加载宿舍列表失败:', error);
+        $('#dormSelect').html('<option value="0">暂不分配</option>');
+      }
+    }
+
+    // 退宿功能
+    window.moveOutStudent = async function(studentId, studentName, buttonElement) {
+      if (!confirm(`确定要为学生 "${studentName}" 办理退宿吗？退宿后该学生将不再属于当前宿舍。`)) {
+        return;
+      }
+
+      const originalHTML = buttonElement.innerHTML;
+      buttonElement.innerHTML = '<i class="fa fa-spinner fa-spin text-sm"></i>';
+      buttonElement.disabled = true;
+
+      try {
+        const result = await MockData.student.moveOut(studentId);
+
+        if (result.success) {
+          alert('退宿成功！');
+          // 重新加载学生列表
+          await loadStudents();
+        } else {
+          alert('退宿失败: ' + result.message);
+          buttonElement.innerHTML = originalHTML;
+          buttonElement.disabled = false;
+        }
+      } catch (error) {
+        console.error('退宿失败:', error);
+        alert('操作失败，请稍后重试');
+        buttonElement.innerHTML = originalHTML;
+        buttonElement.disabled = false;
+      }
+    };
+
+    // 查看学生详情
+    window.viewStudentDetail = async function(studentId, studentNo) {
+      try {
+        const student = await MockData.student.getById(studentId);
+
+        if (student.success === false) {
+          alert('获取学生信息失败: ' + student.message);
+          return;
+        }
+
+        let info = `======== 学生详情 ========\n\n`;
+        info += `学号: ${student.studentNo || '无'}\n`;
+        info += `姓名: ${student.name || '未知'}\n`;
+        info += `性别: ${student.gender || '未知'}\n`;
+        info += `状态: ${student.status || '在校'}\n`;
+        info += `手机: ${student.phone || '无'}\n`;
+        info += `邮箱: ${student.email || '无'}\n`;
+        info += `班级: ${student.className || '未知'}\n`;
+        info += `宿舍: ${student.buildingNo || ''} ${student.dormNo || '未分配'}\n`;
+        if (student.createdAt) {
+          info += `创建时间: ${new Date(student.createdAt).toLocaleString()}\n`;
+        }
+        info += `\n==========================`;
+
+        alert(info);
+      } catch (error) {
+        console.error('查看学生详情失败:', error);
+        alert('获取学生信息失败');
+      }
+    };
+
+    // 添加学生
+    $('#addStudentForm').submit(async function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+      const dormId = parseInt(formData.get('dormId')) || 0;
+      const phone = formData.get('phone') || '';
+      const email = formData.get('email') || '';
+
+      const data = {
+        studentNo: formData.get('studentNo'),
+        name: formData.get('name'),
+        gender: formData.get('gender'),
+        phone: phone,
+        email: email,
+        className: formData.get('className'),
+        dormId: dormId,
+        password: formData.get('password'),
+        status: dormId > 0 ? '在校' : ''
+      };
+
+      // 验证必填字段
+      if (!data.studentNo || !data.name || !data.gender || !data.password) {
+        alert('学号、姓名、性别和密码是必填项');
+        return;
+      }
+
+      const submitBtn = $(this).find('button[type="submit"]');
+      const originalText = submitBtn.text();
+      submitBtn.text('添加中...');
+      submitBtn.prop('disabled', true);
+
+      try {
+        const result = await MockData.student.add(data);
+
+        if (result.success) {
+          alert('添加成功');
+          $('#addStudentModal').addClass('hidden');
+          $('#addStudentForm')[0].reset();
+          loadStudents();
+        } else {
+          alert('添加失败: ' + result.message);
+        }
+      } catch (error) {
+        console.error('添加学生失败:', error);
+        alert('操作失败，请稍后重试');
+      } finally {
+        submitBtn.text(originalText);
+        submitBtn.prop('disabled', false);
+      }
+    });
+
+    // 搜索学生
+    $('#searchBtn').click(function() {
+      currentPage = 1; // 搜索时回到第一页
+      currentFilters = {
+        keyword: $('#searchKeyword').val(),
+        gender: $('#genderFilter').val(),
+        building: $('#buildingFilter').val(),
+        className: $('#classFilter').val(),
+        studentStatus: $('#studentStatusFilter').val()
+      };
+
+      filterAndDisplayStudents();
+    });
+
+    // 重置搜索
+    $('#resetBtn').click(function() {
+      $('#searchForm')[0].reset();
+      currentPage = 1;
+      currentFilters = {};
+      filterAndDisplayStudents();
+    });
+
+    // 模态框控制
+    $('#addStudentBtn').click(function() {
+      loadAvailableDorms();
+      $('#addStudentModal').removeClass('hidden');
+    });
+
+    $('#closeModal, #cancelAdd').click(function() {
+      $('#addStudentModal').addClass('hidden');
+      $('#addStudentForm')[0].reset();
+    });
+
+    // 分页控制
+    $('#prevPage').click(function() {
+      if (currentPage > 1) {
+        currentPage--;
+        filterAndDisplayStudents();
+      }
+    });
+
+    $('#nextPage').click(function() {
+      const totalCount = allStudents ? allStudents.length : 0;
+      const totalPages = Math.ceil(totalCount / pageSize);
+
+      if (currentPage < totalPages) {
+        currentPage++;
+        filterAndDisplayStudents();
+      }
+    });
+
+    // 退出登录
+    $('#logOut').click(function() {
+      if (confirm('确定要退出登录吗？')) {
+        sessionStorage.clear();
+        window.location.href = 'index.html';
+      }
+    });
+
+    // 学生操作函数
+    window.editStudent = async function(id, studentNo) {
+      try {
+        const student = await MockData.student.getById(id);
+
+        if (student.success === false) {
+          alert('获取学生信息失败: ' + student.message);
+          return;
+        }
+
+        // 弹出编辑表单
+        const newName = prompt('请输入新姓名:', student.name);
+        if (newName === null) return;
+        if (!newName.trim()) {
+          alert('姓名不能为空');
+          return;
+        }
+
+        const newGender = prompt('请输入性别(男/女):', student.gender);
+        if (newGender === null) return;
+        if (!['男', '女'].includes(newGender)) {
+          alert('性别必须为"男"或"女"');
+          return;
+        }
+
+        const newPhone = prompt('请输入手机号:', student.phone || '');
+        const newEmail = prompt('请输入邮箱:', student.email || '');
+        const newClassName = prompt('请输入班级:', student.className || '');
+
+        const updateData = {
+          studentId: id,
+          name: newName.trim(),
+          gender: newGender.trim(),
+          phone: newPhone ? newPhone.trim() : '',
+          email: newEmail ? newEmail.trim() : '',
+          className: newClassName ? newClassName.trim() : '',
+          dormId: student.dormId || 0,
+          status: student.status || '在校'
+        };
+
+        const result = await MockData.student.update(updateData);
+
+        if (result.success) {
+          alert('修改成功');
+          loadStudents();
+        } else {
+          alert('修改失败: ' + result.message);
+        }
+      } catch (error) {
+        console.error('编辑学生失败:', error);
+        alert('操作失败，请稍后重试');
+      }
+    };
+
+    window.deleteStudent = async function(id, name) {
+      if (!confirm(`确定要删除学生 "${name}" 吗？此操作不可恢复。`)) {
+        return;
+      }
+
+      try {
+        const result = await MockData.student.remove(id);
+
+        if (result.success) {
+          alert('删除成功');
+          loadStudents();
+        } else {
+          alert('删除失败: ' + result.message);
+        }
+      } catch (error) {
+        console.error('删除学生失败:', error);
+        alert('操作失败，请稍后重试');
+      }
+    };
+
+    // 初始化页面
+    if (checkLogin()) {
+      loadStudents();
+
+      // 从sessionStorage获取登录用户
+      const loginUser = sessionStorage.getItem('name') || '管理员';
+      $('#loginUser').text(loginUser);
+    }
+  });
+</script>
+
+<!-- 引入演示版提示条 -->
+<script src="demo-banner.js"></script>
+</body>
+</html>

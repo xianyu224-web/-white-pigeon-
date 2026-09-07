@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宿舍管理系统 - 登录</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <!-- 配置Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#000000',
+            secondary: '#ffffff',
+            dark: '#111111',
+            darker: '#0a0a0a',
+            'dark-card': '#1a1a1a',
+            'light-gray': '#f5f5f5',
+            'medium-gray': '#666666',
+            'border-gray': '#e0e0e0',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .grid-pattern {
+        background-image:
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        background-size: 20px 20px;
+      }
+      .scrollbar-thin {
+        scrollbar-width: thin;
+      }
+      .scrollbar-thin::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+      }
+      .scrollbar-thin::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 2px;
+      }
+      .ins-border {
+        border: 2px solid #000;
+      }
+      .ins-shadow {
+        box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+      }
+      .ins-shadow-sm {
+        box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+      }
+      .ins-hover:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+      }
+    }
+  </style>
+
+  <!-- 引入字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- 引入模拟数据模块 -->
+  <script src="mock-data.js"></script>
+</head>
+<body class="font-sans bg-white min-h-screen text-gray-900 scrollbar-thin">
+
+<!-- 导航栏 -->
+<header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-border-gray ins-shadow-sm">
+  <div class="container mx-auto px-4">
+    <div class="flex items-center justify-between h-16">
+      <!-- 左侧Logo -->
+      <div class="flex items-center">
+        <div class="flex items-center">
+          <i class="fa fa-building text-2xl text-black mr-2"></i>
+          <span class="text-xl font-bold text-black">宿舍管理系统</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- 主内容区 -->
+<main class="container mx-auto px-4 py-6 flex items-center justify-center min-h-[80vh]">
+  <div class="w-full max-w-md">
+    <!-- 页面标题 -->
+    <div class="mb-8 text-center">
+      <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-black mb-2">用户登录</h1>
+      <p class="text-medium-gray text-sm">请使用您的账号登录系统</p>
+    </div>
+
+    <!-- 登录表单 -->
+    <div class="bg-white rounded-xl p-6 border border-border-gray ins-shadow-sm">
+      <!-- 演示账号提示 -->
+      <div class="mb-6 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
+        <div class="flex items-start gap-2">
+          <i class="fa fa-info-circle text-yellow-600 mt-1"></i>
+          <div class="text-sm">
+            <p class="font-semibold text-yellow-800 mb-2">演示账号（点击一键登录）</p>
+            <div class="flex flex-col gap-2">
+              <button type="button" onclick="quickLogin('student')" 
+                      class="text-left px-3 py-2 bg-white border border-yellow-300 rounded-lg hover:bg-yellow-100 transition text-xs">
+                <span class="font-semibold">👨‍🎓 学生账号</span>：学号 2024001 / 密码 123456
+              </button>
+              <button type="button" onclick="quickLogin('admin')" 
+                      class="text-left px-3 py-2 bg-white border border-yellow-300 rounded-lg hover:bg-yellow-100 transition text-xs">
+                <span class="font-semibold">👨‍💼 宿管账号</span>：工号 D001 / 密码 123456
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <form id="loginForm" class="space-y-6">
+        <div>
+          <label class="block text-sm text-medium-gray mb-2">用户类型</label>
+          <select id="userType" class="w-full px-4 py-3 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
+            <option value="">请选择用户类型</option>
+            <option value="student">学生</option>
+            <option value="admin">宿管</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm text-medium-gray mb-2" id="usernameLabel">学号</label>
+          <input type="text" id="username"
+                 class="w-full px-4 py-3 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black"
+                 placeholder="请输入学号">
+        </div>
+
+        <div>
+          <label class="block text-sm text-medium-gray mb-2">密码</label>
+          <input type="password" id="password"
+                 class="w-full px-4 py-3 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black"
+                 placeholder="请输入密码">
+        </div>
+
+        <!-- 消息提示 -->
+        <div id="message" class="hidden p-3 rounded-lg text-sm" style="display: none;"></div>
+
+        <button type="submit" class="w-full px-4 py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition flex items-center justify-center ins-shadow-sm ins-hover">
+          <i class="fa fa-sign-in-alt mr-2"></i> 登录
+        </button>
+      </form>
+
+      <div class="mt-6 pt-6 border-t border-border-gray text-center">
+        <p class="text-medium-gray text-sm">还没有账号？<a href="register.html" class="text-black hover:text-gray-700 transition font-medium">立即注册</a></p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- 页脚 -->
+<footer class="mt-8 border-t border-border-gray bg-white/50 py-4">
+  <div class="container mx-auto px-4 text-center text-xs text-medium-gray tracking-wider">
+    <p>© 2024 宿舍管理系统 | 版本 1.0.0 (演示版)</p>
+  </div>
+</footer>
+
+<script>
+  // 一键登录
+  function quickLogin(type) {
+    const userTypeSelect = document.getElementById('userType');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const usernameLabel = document.getElementById('usernameLabel');
+
+    if (type === 'student') {
+      userTypeSelect.value = 'student';
+      usernameLabel.textContent = '学号';
+      usernameInput.placeholder = '请输入学号';
+      usernameInput.value = '2024001';
+      passwordInput.value = '123456';
+    } else if (type === 'admin') {
+      userTypeSelect.value = 'admin';
+      usernameLabel.textContent = '工号';
+      usernameInput.placeholder = '请输入宿管工号';
+      usernameInput.value = 'D001';
+      passwordInput.value = '123456';
+    }
+
+    // 自动提交登录
+    setTimeout(() => {
+      document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+    }, 200);
+  }
+
+  // 全局消息显示函数
+  function showMessage(elementId, text, type = 'success') {
+    const messageDiv = document.getElementById(elementId);
+    messageDiv.textContent = text;
+    messageDiv.className = 'p-3 rounded-lg text-sm';
+    messageDiv.style.display = 'block';
+
+    if (type === 'success') {
+      messageDiv.classList.add('bg-gray-100', 'text-black', 'border', 'border-border-gray');
+    } else {
+      messageDiv.classList.add('bg-red-50', 'text-red-600', 'border', 'border-red-200');
+    }
+
+    // 3秒后自动隐藏消息
+    setTimeout(() => {
+      messageDiv.style.display = 'none';
+    }, 3000);
+  }
+
+  // 根据用户类型切换标签
+  document.getElementById('userType').addEventListener('change', function(e) {
+    const userType = e.target.value;
+    const label = document.getElementById('usernameLabel');
+    const input = document.getElementById('username');
+
+    if (userType === 'student') {
+      label.textContent = '学号';
+      input.placeholder = '请输入学号';
+    } else if (userType === 'admin') {
+      label.textContent = '工号';
+      input.placeholder = '请输入宿管工号';
+    } else {
+      label.textContent = '账号';
+      input.placeholder = '请输入账号';
+    }
+  });
+
+  // 登录表单提交
+  document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const userType = document.getElementById('userType').value;
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const messageDiv = document.getElementById('message');
+
+    // 验证输入
+    if (!userType || !username || !password) {
+      showMessage('message', '请填写所有必填项', 'error');
+      return;
+    }
+
+    // 显示加载状态
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>登录中...';
+    submitBtn.disabled = true;
+
+    try {
+      if (userType === 'student') {
+        // 学生登录 - 使用模拟数据
+        const result = await MockData.student.login(username, password);
+
+        if (result.success) {
+          showMessage('message', '登录成功，正在跳转...', 'success');
+
+          // 保存学生信息
+          sessionStorage.setItem('student', JSON.stringify(result.student));
+          sessionStorage.setItem('loginType', 'student');
+
+          // 跳转到学生页面
+          setTimeout(() => {
+            window.location.href = 'student-profile.html';
+          }, 1500);
+
+        } else {
+          showMessage('message', result.message || '登录失败', 'error');
+        }
+
+      } else if (userType === 'admin') {
+        // 宿管登录 - 使用模拟数据
+        const result = await MockData.admin.login(username, password);
+
+        if (result.success) {
+          showMessage('message', '登录成功，正在跳转...', 'success');
+
+          // 保存宿管信息
+          sessionStorage.setItem('loginType', 'dormAdmin');
+          sessionStorage.setItem('name', result.name);
+          sessionStorage.setItem('adminNo', result.adminNo);
+          sessionStorage.setItem('buildingNo', result.buildingNo || '');
+          sessionStorage.setItem('role', result.role || '普通宿管');
+
+          // 跳转到宿管页面
+          setTimeout(() => {
+            window.location.href = 'interface.html';
+          }, 1500);
+
+        } else {
+          showMessage('message', result.message || '登录失败', 'error');
+        }
+
+      } else {
+        showMessage('message', '请选择用户类型', 'error');
+      }
+
+    } catch (error) {
+      console.error('登录失败:', error);
+      showMessage('message', '登录出错，请重试', 'error');
+    } finally {
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+    }
+  });
+
+  // 页面加载时检查是否已登录
+  window.addEventListener('DOMContentLoaded', async function() {
+    try {
+      const loginType = sessionStorage.getItem('loginType');
+
+      if (loginType === 'student') {
+        const studentStr = sessionStorage.getItem('student');
+        if (studentStr) {
+          const result = await MockData.student.checkLogin();
+          if (result.isLogin) {
+            window.location.href = 'student-profile.html';
+            return;
+          }
+        }
+      }
+
+      if (loginType === 'dormAdmin') {
+        const result = await MockData.admin.checkLogin();
+        if (result.success) {
+          window.location.href = 'interface.html';
+          return;
+        }
+      }
+
+      console.log('用户未登录，显示登录页面');
+
+    } catch (error) {
+      console.log('检查登录状态时发生错误:', error);
+    }
+  });
+</script>
+
+<!-- 引入演示版提示条 -->
+<script src="demo-banner.js"></script>
+</body>
+</html>
