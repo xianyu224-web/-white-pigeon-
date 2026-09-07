@@ -13,17 +13,19 @@ function addDemoBanner() {
         top: 0;
         left: 0;
         right: 0;
-        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-        color: white;
+        background: #0a0a0a;
+        color: #fff;
         text-align: center;
         padding: 10px 20px;
-        font-size: 14px;
-        font-weight: 600;
+        font-size: 13px;
+        font-weight: 500;
         z-index: 10000;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        letter-spacing: 1px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #333;
+        font-family: Inter, system-ui, sans-serif;
     `;
-    banner.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 演示版 - 所有数据均为模拟，仅供演示使用 <i class="fas fa-exclamation-triangle"></i>';
+    banner.innerHTML = '<i class="fas fa-info-circle"></i> 演示版 - 所有数据均为模拟，仅供演示使用';
     document.body.appendChild(banner);
 
     // 调整 body 顶部间距

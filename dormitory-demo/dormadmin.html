@@ -2,790 +2,288 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta http-equiv="Content-Language" content="zh-CN">
-    <meta name="description" content="宿舍管理系统" charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>宿舍管理系统 - 宿管管理</title>
-    <!-- 引入Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- 引入Font Awesome -->
+    <title>宿管管理 - 宿舍管理系统</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- 引入模拟数据模块 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="mock-data.js"></script>
-
-    <!-- 配置Tailwind -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#000000',
-                        secondary: '#ffffff',
-                        dark: '#111111',
-                        darker: '#0a0a0a',
-                        'dark-card': '#1a1a1a',
-                        'light-gray': '#f5f5f5',
-                        'medium-gray': '#666666',
-                        'border-gray': '#e0e0e0',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    },
-                },
-            }
-        }
-    </script>
-
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .scrollbar-thin {
-                scrollbar-width: thin;
-            }
-            .scrollbar-thin::-webkit-scrollbar {
-                width: 4px;
-                height: 4px;
-            }
-            .scrollbar-thin::-webkit-scrollbar-thumb {
-                background-color: rgba(0, 0, 0, 0.5);
-                border-radius: 2px;
-            }
-            .ins-border {
-                border: 2px solid #000;
-            }
-            .ins-shadow {
-                box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
-            }
-            .ins-shadow-sm {
-                box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
-            }
-            .ins-hover:hover {
-                transform: translate(-2px, -2px);
-                box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
-            }
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #fff; color: #000; min-height: 100vh; }
+        header { position: sticky; top: 44px; z-index: 50; background: rgba(255,255,255,0.9); backdrop-filter: blur(12px); border-bottom: 1px solid #e0e0e0; box-shadow: 2px 2px 0 0 rgba(0,0,0,1); }
+        .header-inner { max-width: 1200px; margin: 0 auto; padding: 0 20px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+        .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: #000; text-decoration: none; }
+        .logo i { font-size: 24px; }
+        nav { display: flex; gap: 32px; margin-left: 40px; flex: 1; }
+        nav a { color: #666; text-decoration: none; font-size: 14px; font-weight: 500; padding: 22px 0; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        nav a:hover { color: #000; }
+        nav a.active { color: #000; border-bottom-color: #000; font-weight: 600; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #f5f5f5; border: 1px solid rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: #666; font-size: 14px; }
+        .user-name { font-size: 14px; font-weight: 500; }
+        .logout-btn { padding: 8px; border: none; background: transparent; color: #666; cursor: pointer; border-radius: 50%; transition: all 0.2s; font-size: 16px; }
+        .logout-btn:hover { background: #f5f5f5; color: #000; }
+        main { max-width: 1200px; margin: 0 auto; padding: 32px 20px; min-height: calc(100vh - 64px - 44px - 60px); }
+        .page-header { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+        @media (min-width: 768px) { .page-header { flex-direction: row; align-items: center; justify-content: space-between; } }
+        .page-title h1 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; margin-bottom: 4px; }
+        .page-title p { color: #666; font-size: 14px; }
+        .btn { padding: 10px 20px; background: #000; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; box-shadow: 2px 2px 0 0 rgba(0,0,0,1); text-decoration: none; }
+        .btn:hover { background: #333; transform: translate(-1px, -1px); box-shadow: 3px 3px 0 0 rgba(0,0,0,1); }
+        .btn-outline { background: #fff; color: #000; border: 1px solid #e0e0e0; box-shadow: 2px 2px 0 0 rgba(0,0,0,1); }
+        .btn-outline:hover { background: #f5f5f5; border-color: #000; }
+        .btn-sm { padding: 6px 12px; font-size: 13px; box-shadow: none; }
+        .btn-danger { background: #fff; color: #dc2626; border: 1px solid #fecaca; box-shadow: none; }
+        .btn-danger:hover { background: #fef2f2; border-color: #dc2626; transform: none; box-shadow: none; }
+        .search-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 2px 2px 0 0 rgba(0,0,0,1); }
+        .search-row { display: flex; flex-direction: column; gap: 16px; }
+        @media (min-width: 768px) { .search-row { flex-direction: row; } }
+        .search-input { flex: 1; position: relative; }
+        .search-input i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #666; }
+        .search-input input { width: 100%; padding: 10px 16px 10px 40px; border: 1px solid #e0e0e0; border-radius: 8px; background: #f5f5f5; font-size: 14px; font-family: inherit; transition: all 0.2s; }
+        .search-input input:focus { outline: none; border-color: #000; background: #fff; }
+        .search-buttons { display: flex; gap: 12px; justify-content: flex-end; }
+        .table-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden; box-shadow: 2px 2px 0 0 rgba(0,0,0,1); }
+        .table-header { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr 1.5fr; padding: 14px 24px; background: #f5f5f5; border-bottom: 1px solid #e0e0e0; font-size: 13px; font-weight: 500; color: #666; }
+        .table-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr 1.5fr; padding: 16px 24px; border-bottom: 1px solid #e0e0e0; align-items: center; transition: background 0.2s; }
+        .table-row:hover { background: #fafafa; }
+        .table-row:last-child { border-bottom: none; }
+        .admin-cell { display: flex; align-items: center; gap: 12px; }
+        .admin-avatar { width: 40px; height: 40px; border-radius: 50%; background: #f5f5f5; display: flex; align-items: center; justify-content: center; color: #666; font-size: 16px; }
+        .admin-name { font-weight: 600; }
+        .admin-email { font-size: 12px; color: #666; margin-top: 2px; }
+        .cell { font-size: 14px; }
+        .cell-sm { font-size: 13px; color: #666; }
+        .actions { display: flex; gap: 8px; justify-content: flex-end; }
+        .empty-state { padding: 48px 24px; text-align: center; color: #666; }
+        .empty-state i { font-size: 36px; margin-bottom: 12px; display: block; }
+        .pagination { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-top: 1px solid #e0e0e0; }
+        .pagination-info { font-size: 13px; color: #666; }
+        .pagination-info span { color: #000; font-weight: 600; }
+        .pagination-btns { display: flex; gap: 4px; }
+        .page-btn { width: 36px; height: 36px; border: 1px solid #e0e0e0; background: #fff; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: #666; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .page-btn:hover:not(:disabled) { border-color: #000; color: #000; }
+        .page-btn.active { background: #000; color: #fff; border-color: #000; }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: #fff; border-radius: 12px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 4px 4px 0 0 rgba(0,0,0,1); }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 24px; border-bottom: 1px solid #e0e0e0; }
+        .modal-header h3 { font-size: 20px; font-weight: 700; }
+        .modal-close { background: none; border: none; font-size: 20px; color: #666; cursor: pointer; }
+        .modal-body { padding: 24px; }
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        @media (min-width: 640px) { .form-grid { grid-template-columns: 1fr 1fr; } }
+        .form-group label { display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px 14px; border: 1px solid #e0e0e0; border-radius: 8px; background: #f5f5f5; font-size: 14px; font-family: inherit; transition: all 0.2s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #000; background: #fff; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px; border-top: 1px solid #e0e0e0; }
+        footer { border-top: 1px solid #e0e0e0; background: rgba(255,255,255,0.5); padding: 16px 20px; text-align: center; font-size: 12px; color: #666; letter-spacing: 0.5px; }
+        .mobile-menu-btn { display: none; background: none; border: none; font-size: 20px; cursor: pointer; color: #000; }
+        @media (max-width: 768px) {
+            nav { display: none; position: absolute; top: 64px; left: 0; right: 0; background: #fff; border-bottom: 1px solid #e0e0e0; flex-direction: column; padding: 16px 20px; gap: 12px; margin-left: 0; z-index: 100; }
+            nav.open { display: flex; }
+            nav a { padding: 8px 0; border-bottom: none; }
+            nav a.active { border-bottom: none; }
+            .mobile-menu-btn { display: block; }
+            .user-name { display: none; }
+            .table-header, .table-row { grid-template-columns: 2fr 1fr 1.5fr; }
+            .table-header > div:nth-child(2), .table-header > div:nth-child(3), .table-header > div:nth-child(4),
+            .table-row > .cell-sm:nth-child(2), .table-row > .cell-sm:nth-child(3), .table-row > .cell:nth-child(4) { display: none; }
         }
     </style>
-
-    <!-- 引入字体 -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="font-sans bg-white min-h-screen text-gray-900 scrollbar-thin">
-
-<!-- 导航栏 -->
-<header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-border-gray ins-shadow-sm">
-    <div class="container mx-auto px-4">
-        <div class="flex items-center justify-between h-16">
-            <!-- 左侧Logo -->
-            <div class="flex items-center">
-                <div class="flex items-center">
-                    <i class="fa fa-building text-2xl text-black mr-2"></i>
-                    <span class="text-xl font-bold text-black">宿舍管理系统</span>
-                </div>
-
-                <!-- 导航链接 - 桌面版 -->
-                <nav class="hidden md:ml-10 md:flex md:space-x-8">
-                    <a href="interface.html" class="text-medium-gray hover:text-black transition px-1 pt-1 font-medium">学生管理</a>
-                    <a href="dorm.html" class="text-medium-gray hover:text-black transition px-1 pt-1 font-medium">宿舍管理</a>
-                    <a href="dormadmin.html" class="text-black border-b-2 border-black px-1 pt-1 font-medium">宿管管理</a>
+<body>
+    <header>
+        <div class="header-inner">
+            <div style="display:flex;align-items:center;">
+                <a href="dashboard.html" class="logo"><i class="fa fa-building"></i><span>宿舍管理系统</span></a>
+                <nav id="mainNav">
+                    <a href="dashboard.html">仪表板</a>
+                    <a href="student.html">学生管理</a>
+                    <a href="dorm.html">宿舍管理</a>
+                    <a href="dormadmin.html" class="active">宿管管理</a>
+                    <a href="profile.html">个人中心</a>
                 </nav>
             </div>
-
-            <!-- 右侧用户区域 -->
-            <div class="flex items-center">
-                <!-- 用户头像 -->
-                <div class="ml-4 relative">
-                    <div class="flex items-center">
-                        <img class="h-8 w-8 rounded-full border border-black/30" src="https://picsum.photos/200/200?random=1" alt="用户头像">
-                        <span id="loginUser" class="ml-2 hidden md:block text-black font-medium">管理员</span>
-                        <i class="fa fa-chevron-down ml-1 text-xs text-medium-gray"></i>
-                    </div>
-                </div>
-
-                <!-- 退出登录 -->
-                <button id="logOut" class="ml-4 p-2 rounded-full text-medium-gray hover:text-black hover:bg-light-gray transition">
-                    <i class="fa fa-sign-out"></i>
-                </button>
+            <div class="header-right">
+                <button class="mobile-menu-btn" onclick="toggleMenu()"><i class="fa fa-bars"></i></button>
+                <div class="user-info"><div class="user-avatar"><i class="fa fa-user-shield"></i></div><span class="user-name" id="userName">管理员</span></div>
+                <button class="logout-btn" onclick="logout()"><i class="fa fa-sign-out"></i></button>
             </div>
         </div>
-    </div>
-</header>
+    </header>
 
-<!-- 主内容区 -->
-<main class="container mx-auto px-4 py-6">
-    <!-- 页面标题 -->
-    <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
-        <div>
-            <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-black">宿管管理</h1>
-            <p class="text-medium-gray text-sm mt-1">管理系统中的所有宿管信息</p>
+    <main>
+        <div class="page-header">
+            <div class="page-title"><h1>宿管管理</h1><p>管理系统中的所有宿管信息</p></div>
+            <button class="btn" onclick="openAddModal()"><i class="fa fa-plus"></i> 新增宿管</button>
         </div>
 
-        <button id="addAdminBtn" class="mt-4 md:mt-0 px-4 py-2 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition flex items-center ins-shadow-sm ins-hover">
-            <i class="fa fa-plus mr-2"></i> 新增宿管
-        </button>
-    </div>
-
-    <!-- 搜索和筛选区域 -->
-    <div class="bg-white rounded-xl p-4 mb-6 border border-border-gray ins-shadow-sm">
-        <form id="searchForm" class="space-y-4">
-            <!-- 搜索框 -->
-            <div class="flex flex-col md:flex-row gap-4">
-                <div class="relative flex-1">
-          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-medium-gray">
-            <i class="fa fa-search"></i>
-          </span>
-                    <input type="text" id="searchKeyword"
-                           class="w-full pl-10 pr-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black"
-                           placeholder="搜索工号、姓名、楼栋...">
+        <div class="search-card">
+            <div class="search-row">
+                <div class="search-input">
+                    <i class="fa fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="搜索工号、姓名、楼栋..." onkeyup="if(event.key==='Enter')handleSearch()">
                 </div>
-
-                <div class="flex gap-4">
-                    <select id="roleFilter" class="px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
-                        <option value="">所有角色</option>
-                        <option value="普通宿管">普通宿管</option>
-                        <option value="主管">主管</option>
-                    </select>
-
-                    <select id="buildingFilter" class="px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
-                        <option value="">所有楼栋</option>
-                        <option value="A栋">A栋</option>
-                        <option value="B栋">B栋</option>
-                        <option value="C栋">C栋</option>
-                        <option value="D栋">D栋</option>
-                        <option value="E栋">E栋</option>
-                    </select>
+                <div class="search-buttons">
+                    <button class="btn btn-outline btn-sm" onclick="resetSearch()">重置</button>
+                    <button class="btn btn-sm" onclick="handleSearch()"><i class="fa fa-search"></i> 查询</button>
                 </div>
             </div>
-
-            <!-- 按钮组 -->
-            <div class="flex justify-end gap-3">
-                <button type="button" id="resetBtn" class="px-4 py-2 border border-border-gray rounded-lg hover:border-black hover:text-black transition ins-shadow-sm ins-hover">
-                    重置
-                </button>
-                <button type="button" id="searchBtn" class="px-4 py-2 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition ins-shadow-sm ins-hover">
-                    <i class="fa fa-search mr-1"></i> 查询
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <!-- 宿管列表 -->
-    <div class="bg-white rounded-xl border border-border-gray overflow-hidden ins-shadow-sm">
-        <!-- 列表头部 -->
-        <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-border-gray bg-light-gray text-sm font-medium text-medium-gray">
-            <div class="col-span-5 md:col-span-2">宿管信息</div>
-            <div class="hidden md:block md:col-span-2">工号</div>
-            <div class="hidden md:block md:col-span-1">联系方式</div>
-            <div class="col-span-3 md:col-span-2">楼栋</div>
-            <div class="hidden lg:block lg:col-span-1">入职时间</div>
-            <div class="col-span-4 md:col-span-1">角色</div>
-            <div class="col-span-4 md:col-span-2 text-right">操作</div>
         </div>
 
-        <!-- 列表内容 -->
-        <div class="divide-y divide-border-gray" id="adminList">
-            <!-- 宿管数据会动态加载 -->
-        </div>
-
-        <!-- 分页 -->
-        <div class="px-6 py-4 border-t border-border-gray flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div class="text-sm text-medium-gray">
-                显示 <span class="text-black" id="pageStart">0</span> 到
-                <span class="text-black" id="pageEnd">0</span> 条，共
-                <span class="text-black" id="totalCount">0</span> 条记录
+        <div class="table-card">
+            <div class="table-header">
+                <div>宿管信息</div><div>工号</div><div>楼栋</div><div>角色</div><div>联系方式</div><div style="text-align:right;">操作</div>
             </div>
+            <div id="tableBody"></div>
+            <div class="pagination">
+                <div class="pagination-info">共 <span id="totalCount">0</span> 条记录</div>
+                <div class="pagination-btns" id="paginationBtns"></div>
+            </div>
+        </div>
+    </main>
 
-            <div class="flex items-center">
-                <button id="prevPage" class="w-9 h-9 flex items-center justify-center rounded border border-border-gray text-medium-gray hover:border-black hover:text-black transition mr-1 ins-shadow-sm ins-hover">
-                    <i class="fa fa-chevron-left text-xs"></i>
-                </button>
-                <button class="w-9 h-9 flex items-center justify-center rounded bg-black text-white font-medium mr-1 ins-shadow-sm" id="currentPage">1</button>
-                <button id="nextPage" class="w-9 h-9 flex items-center justify-center rounded border border-border-gray hover:border-black hover:text-black transition mr-1 ins-shadow-sm ins-hover">
-                    <i class="fa fa-chevron-right text-xs"></i>
-                </button>
+    <footer><p>© 2024 宿舍管理系统 | 版本 1.0.0</p></footer>
+
+    <div class="modal-overlay" id="adminModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">新增宿管</h3>
+                <button class="modal-close" onclick="closeModal()"><i class="fa fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="adminForm" onsubmit="return handleSubmit(event)">
+                    <div class="form-grid">
+                        <div class="form-group"><label>工号 *</label><input type="text" id="f_adminNo" required></div>
+                        <div class="form-group"><label>姓名 *</label><input type="text" id="f_name" required></div>
+                        <div class="form-group"><label>楼栋号</label><input type="text" id="f_buildingNo"></div>
+                        <div class="form-group"><label>角色</label>
+                            <select id="f_role">
+                                <option value="普通宿管">普通宿管</option>
+                                <option value="主管">主管</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>电话</label><input type="text" id="f_phone"></div>
+                        <div class="form-group"><label>邮箱</label><input type="email" id="f_email"></div>
+                        <div class="form-group" style="grid-column: 1 / -1;"><label>密码</label><input type="text" id="f_password" placeholder="默认123456"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal()">取消</button>
+                <button class="btn" onclick="document.getElementById('adminForm').requestSubmit()">确定</button>
             </div>
         </div>
     </div>
-</main>
 
-<!-- 页脚 -->
-<footer class="mt-8 border-t border-border-gray bg-white/50 py-4">
-    <div class="container mx-auto px-4 text-center text-xs text-medium-gray tracking-wider">
-        <p>© 2024 宿舍管理系统 | 版本 1.0.0 (演示版)</p>
-    </div>
-</footer>
+    <script>
+        const user = requireAdmin();
+        if (user) { document.getElementById('userName').textContent = user.name; }
 
-<!-- 添加宿管模态框 -->
-<div id="addAdminModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden p-4">
-    <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto ins-shadow mx-auto my-8 relative top-1/2 transform -translate-y-1/2">
-        <div class="p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-black">添加宿管</h3>
-                <button id="closeModal" class="text-medium-gray hover:text-black">
-                    <i class="fa fa-times"></i>
-                </button>
-            </div>
-
-            <form id="addAdminForm" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">工号 *</label>
-                        <input type="text" name="adminNo" required
-                               class="w-full px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black"
-                               placeholder="如：D001">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">姓名 *</label>
-                        <input type="text" name="name" required
-                               class="w-full px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">手机号 *</label>
-                        <input type="tel" name="phone" required
-                               class="w-full px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
-                        <input type="email" name="email"
-                               class="w-full px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">管理楼栋 *</label>
-                        <select name="buildingNo" required
-                                class="w-full px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
-                            <option value="">请选择楼栋</option>
-                            <option value="A栋">A栋</option>
-                            <option value="B栋">B栋</option>
-                            <option value="C栋">C栋</option>
-                            <option value="D栋">D栋</option>
-                            <option value="E栋">E栋</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">角色 *</label>
-                        <select name="role" required
-                                class="w-full px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
-                            <option value="">请选择角色</option>
-                            <option value="普通宿管">普通宿管</option>
-                            <option value="主管">主管</option>
-                        </select>
-                    </div>
-
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">初始密码 *</label>
-                        <input type="password" name="password" value="123456" required
-                               class="w-full px-4 py-2 rounded-lg bg-light-gray border border-border-gray focus:border-black focus:outline-none transition duration-200 text-black">
-                        <p class="text-xs text-medium-gray mt-1">默认密码为123456，可修改</p>
-                    </div>
-                </div>
-
-                <div class="mt-6 flex justify-end gap-3">
-                    <button type="button" id="cancelAdd" class="px-4 py-2 border border-border-gray rounded-lg hover:border-black hover:text-black transition ins-shadow-sm ins-hover">
-                        取消
-                    </button>
-                    <button type="submit" class="px-4 py-2 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition ins-shadow-sm ins-hover">
-                        添加
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<script>
-    $(document).ready(function() {
         let currentPage = 1;
         const pageSize = 10;
-        let currentFilters = {};
-        let allAdmins = [];
+        let currentKeyword = '';
+        let editingId = 0;
 
-        // 检查登录状态
-        function checkLogin() {
-            const loginType = sessionStorage.getItem('loginType');
-            if (loginType !== 'dormAdmin') {
-                window.location.href = 'index.html';
-                return false;
-            }
-            return true;
-        }
+        function toggleMenu() { document.getElementById('mainNav').classList.toggle('open'); }
 
-        // 检查是否是主管
-        function isSupervisor() {
-            const role = sessionStorage.getItem('role') || '普通宿管';
-            return role === '主管';
-        }
+        function loadTable() {
+            const data = getDormAdminPage(currentPage, pageSize, currentKeyword);
+            document.getElementById('totalCount').textContent = data.total;
 
-        // 显示加载提示
-        function showLoading() {
-            $('#adminList').html(`
-        <div class="flex justify-center items-center py-12">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-          <span class="ml-3 text-medium-gray">加载中...</span>
-        </div>
-      `);
-        }
-
-        // 显示错误信息
-        function showError(message) {
-            $('#adminList').html(`
-        <div class="text-center py-12">
-          <i class="fa fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
-          <p class="text-medium-gray">${message}</p>
-          <button onclick="loadAdmins()" class="mt-4 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition ins-shadow-sm ins-hover">
-            重试
-          </button>
-        </div>
-      `);
-        }
-
-        // 获取宿管列表
-        async function loadAdmins() {
-            showLoading();
-
-            try {
-                allAdmins = await MockData.admin.list();
-                console.log('获取到宿管数据:', allAdmins);
-                filterAndDisplayAdmins();
-
-            } catch (error) {
-                console.error('加载宿管列表失败:', error);
-                showError('加载宿管列表失败，请刷新重试');
-            }
-        }
-
-        // 根据筛选条件过滤并显示宿管
-        function filterAndDisplayAdmins() {
-            let filteredAdmins = [...allAdmins];
-
-            // 应用筛选条件
-            if (currentFilters.keyword) {
-                const keyword = currentFilters.keyword.toLowerCase();
-                filteredAdmins = filteredAdmins.filter(admin =>
-                    (admin.adminNo && admin.adminNo.toLowerCase().includes(keyword)) ||
-                    (admin.name && admin.name.toLowerCase().includes(keyword)) ||
-                    (admin.buildingNo && admin.buildingNo.toLowerCase().includes(keyword))
-                );
-            }
-
-            if (currentFilters.role) {
-                filteredAdmins = filteredAdmins.filter(admin =>
-                    admin.role === currentFilters.role
-                );
-            }
-
-            if (currentFilters.building) {
-                filteredAdmins = filteredAdmins.filter(admin =>
-                    admin.buildingNo === currentFilters.building
-                );
-            }
-
-            // 计算分页
-            const totalCount = filteredAdmins.length;
-            const startIndex = (currentPage - 1) * pageSize;
-            const endIndex = Math.min(startIndex + pageSize, totalCount);
-            const pageAdmins = filteredAdmins.slice(startIndex, endIndex);
-
-            displayAdmins(pageAdmins);
-            updatePagination(totalCount, startIndex, endIndex);
-        }
-
-        // 显示宿管列表
-        function displayAdmins(admins) {
-            if (!admins || admins.length === 0) {
-                $('#adminList').html(`
-          <div class="text-center py-12">
-            <i class="fa fa-users text-4xl text-gray-400 mb-4"></i>
-            <p class="text-medium-gray">暂无宿管数据</p>
-          </div>
-        `);
-                return;
+            if (data.list.length === 0) {
+                document.getElementById('tableBody').innerHTML = '<div class="empty-state"><i class="fa fa-inbox"></i>暂无数据</div>';
+            } else {
+                document.getElementById('tableBody').innerHTML = data.list.map(a => `
+                    <div class="table-row">
+                        <div class="admin-cell">
+                            <div class="admin-avatar"><i class="fa fa-user-shield"></i></div>
+                            <div><div class="admin-name">${a.name}</div><div class="admin-email">${a.email || '无邮箱'}</div></div>
+                        </div>
+                        <div class="cell-sm">${a.adminNo}</div>
+                        <div class="cell-sm">${a.buildingNo || '未分配'}</div>
+                        <div class="cell-sm">${a.role || '普通宿管'}</div>
+                        <div class="cell-sm">${a.phone || '无电话'}</div>
+                        <div class="actions">
+                            <button class="btn btn-outline btn-sm" onclick="openEditModal(${a.id})"><i class="fa fa-edit"></i> 编辑</button>
+                            <button class="btn btn-danger btn-sm" onclick="handleDelete(${a.id}, '${a.name}')"><i class="fa fa-trash"></i> 删除</button>
+                        </div>
+                    </div>
+                `).join('');
             }
 
             let html = '';
-            admins.forEach((admin, index) => {
-                const roleClass = admin.role === '主管' ?
-                    'px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full border border-blue-200' :
-                    'px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full border border-green-200';
-
-                const roleText = admin.role || '普通宿管';
-
-                // 处理可能的null/undefined值
-                const name = admin.name || '未知姓名';
-                const adminNo = admin.adminNo || '未知工号';
-                const phone = admin.phone || '无';
-                const buildingNo = admin.buildingNo || '未分配';
-                const email = admin.email || '无';
-                const createdAt = admin.createdAt ? new Date(admin.createdAt).toLocaleDateString('zh-CN') : '未知';
-                const adminId = admin.adminId || admin.id || index + 1;
-
-                // 根据权限决定是否显示操作按钮
-                const isCurrentUser = sessionStorage.getItem('adminNo') === adminNo;
-                const canManage = isSupervisor();
-
-                html += `
-          <div class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-light-gray transition">
-            <div class="col-span-5 md:col-span-2 flex items-center">
-              <img src="https://picsum.photos/100/100?random=${adminId + 100}" alt="宿管头像"
-                class="w-10 h-10 rounded-full border border-border-gray mr-3 object-cover">
-              <div>
-                <h3 class="font-medium text-black">${name}</h3>
-                <p class="text-xs text-medium-gray md:hidden">${adminNo}</p>
-              </div>
-            </div>
-            <div class="hidden md:flex md:col-span-2 items-center text-sm text-medium-gray">${adminNo}</div>
-            <div class="hidden md:flex md:col-span-1 items-center text-sm text-medium-gray">${phone}</div>
-            <div class="flex col-span-3 md:col-span-2 items-center text-sm text-medium-gray">${buildingNo}</div>
-            <div class="hidden lg:flex lg:col-span-1 items-center text-sm text-medium-gray">${createdAt}</div>
-            <div class="flex col-span-4 md:col-span-1 items-center">
-              <span class="${roleClass}">${roleText}</span>
-            </div>
-            <div class="flex col-span-4 md:col-span-2 items-center justify-end gap-2">
-              ${canManage ? `
-              <button onclick="editAdmin(${adminId}, '${adminNo}')" class="p-1 text-black hover:text-gray-700" title="编辑">
-                <i class="fa fa-pencil text-sm"></i>
-              </button>
-              ` : ''}
-              <button onclick="viewAdmin(${adminId}, '${adminNo}')" class="p-1 text-medium-gray hover:text-black" title="查看详情">
-                <i class="fa fa-eye text-sm"></i>
-              </button>
-              ${canManage && !isCurrentUser ? `
-              <button onclick="deleteAdmin(${adminId}, '${name}')" class="p-1 text-red-500 hover:text-red-700" title="删除">
-                <i class="fa fa-trash text-sm"></i>
-              </button>
-              ` : ''}
-            </div>
-          </div>
-        `;
-            });
-
-            $('#adminList').html(html);
+            html += `<button class="page-btn" onclick="prevPage()" ${currentPage<=1?'disabled':''}><i class="fa fa-chevron-left"></i></button>`;
+            html += `<button class="page-btn active">${currentPage}</button>`;
+            html += `<button class="page-btn" onclick="nextPage()" ${currentPage>=data.totalPages?'disabled':''}><i class="fa fa-chevron-right"></i></button>`;
+            document.getElementById('paginationBtns').innerHTML = html;
         }
 
-        // 更新分页信息
-        function updatePagination(total, startIndex, endIndex) {
-            const pageStart = total > 0 ? startIndex + 1 : 0;
-            const pageEnd = Math.min(endIndex, total);
+        function handleSearch() { currentKeyword = document.getElementById('searchInput').value; currentPage = 1; loadTable(); }
+        function resetSearch() { document.getElementById('searchInput').value = ''; currentKeyword = ''; currentPage = 1; loadTable(); }
+        function prevPage() { if (currentPage > 1) { currentPage--; loadTable(); } }
+        function nextPage() { const data = getDormAdminPage(currentPage, pageSize, currentKeyword); if (currentPage < data.totalPages) { currentPage++; loadTable(); } }
 
-            $('#pageStart').text(pageStart);
-            $('#pageEnd').text(pageEnd);
-            $('#totalCount').text(total);
-            $('#currentPage').text(currentPage);
-
-            // 更新分页按钮状态
-            $('#prevPage').prop('disabled', currentPage <= 1);
-            $('#nextPage').prop('disabled', endIndex >= total);
+        function openAddModal() {
+            editingId = 0;
+            document.getElementById('modalTitle').textContent = '新增宿管';
+            document.getElementById('adminForm').reset();
+            document.getElementById('f_role').value = '普通宿管';
+            document.getElementById('f_adminNo').disabled = false;
+            document.getElementById('adminModal').classList.add('show');
         }
 
-        // 添加宿管表单提交
-        $('#addAdminForm').submit(async function(e) {
+        function openEditModal(id) {
+            const admin = getDormAdmins().find(a => a.id === id);
+            if (!admin) return;
+            editingId = id;
+            document.getElementById('modalTitle').textContent = '编辑宿管';
+            document.getElementById('f_adminNo').value = admin.adminNo;
+            document.getElementById('f_adminNo').disabled = true;
+            document.getElementById('f_name').value = admin.name;
+            document.getElementById('f_buildingNo').value = admin.buildingNo || '';
+            document.getElementById('f_role').value = admin.role || '普通宿管';
+            document.getElementById('f_phone').value = admin.phone || '';
+            document.getElementById('f_email').value = admin.email || '';
+            document.getElementById('f_password').value = '';
+            document.getElementById('adminModal').classList.add('show');
+        }
+
+        function closeModal() { document.getElementById('adminModal').classList.remove('show'); }
+
+        function handleSubmit(e) {
             e.preventDefault();
-
-            const formData = new FormData(this);
-            const email = formData.get('email') || '';
-            const buildingNo = formData.get('buildingNo') || '';
-            const role = formData.get('role') || '';
-
-            // 验证必填字段
-            if (!formData.get('adminNo') || !formData.get('adminNo').trim()) {
-                alert('工号不能为空');
-                return;
-            }
-
-            if (!formData.get('name') || !formData.get('name').trim()) {
-                alert('姓名不能为空');
-                return;
-            }
-
-            if (!formData.get('phone') || !formData.get('phone').trim()) {
-                alert('手机号不能为空');
-                return;
-            }
-
-            if (!buildingNo.trim()) {
-                alert('请选择管理楼栋');
-                return;
-            }
-
-            if (!role.trim()) {
-                alert('请选择角色');
-                return;
-            }
-
-            if (!formData.get('password') || !formData.get('password').trim()) {
-                alert('密码不能为空');
-                return;
-            }
-
             const data = {
-                adminNo: formData.get('adminNo').trim(),
-                name: formData.get('name').trim(),
-                phone: formData.get('phone').trim(),
-                email: email.trim(),
-                buildingNo: buildingNo.trim(),
-                role: role.trim(),
-                password: formData.get('password').trim()
+                adminNo: document.getElementById('f_adminNo').value,
+                name: document.getElementById('f_name').value,
+                buildingNo: document.getElementById('f_buildingNo').value,
+                role: document.getElementById('f_role').value,
+                phone: document.getElementById('f_phone').value,
+                email: document.getElementById('f_email').value,
+                password: document.getElementById('f_password').value
             };
-
-            const submitBtn = $(this).find('button[type="submit"]');
-            const originalText = submitBtn.text();
-            submitBtn.text('添加中...');
-            submitBtn.prop('disabled', true);
-
-            try {
-                const result = await MockData.admin.add(data);
-
-                if (result.success) {
-                    alert('添加成功');
-                    $('#addAdminModal').addClass('hidden');
-                    $('#addAdminForm')[0].reset();
-                    loadAdmins();
-                } else {
-                    alert('添加失败: ' + result.message);
-                }
-            } catch (error) {
-                console.error('添加宿管失败:', error);
-                alert('操作失败，请稍后重试');
-            } finally {
-                submitBtn.text(originalText);
-                submitBtn.prop('disabled', false);
-            }
-        });
-
-        // 搜索宿管
-        $('#searchBtn').click(function() {
-            currentPage = 1;
-            currentFilters = {
-                keyword: $('#searchKeyword').val(),
-                role: $('#roleFilter').val(),
-                building: $('#buildingFilter').val()
-            };
-
-            filterAndDisplayAdmins();
-        });
-
-        // 重置搜索
-        $('#resetBtn').click(function() {
-            $('#searchForm')[0].reset();
-            currentPage = 1;
-            currentFilters = {};
-            filterAndDisplayAdmins();
-        });
-
-        // 模态框控制
-        $('#addAdminBtn').click(function() {
-            // 权限检查
-            if (!isSupervisor()) {
-                alert('权限不足：只有主管可以添加宿管');
-                return;
-            }
-
-            $('#addAdminModal').removeClass('hidden');
-        });
-
-        $('#closeModal, #cancelAdd').click(function() {
-            $('#addAdminModal').addClass('hidden');
-            $('#addAdminForm')[0].reset();
-        });
-
-        // 分页控制
-        $('#prevPage').click(function() {
-            if (currentPage > 1) {
-                currentPage--;
-                filterAndDisplayAdmins();
-            }
-        });
-
-        $('#nextPage').click(function() {
-            const totalCount = allAdmins ? allAdmins.length : 0;
-            const totalPages = Math.ceil(totalCount / pageSize);
-
-            if (currentPage < totalPages) {
-                currentPage++;
-                filterAndDisplayAdmins();
-            }
-        });
-
-        // 退出登录
-        $('#logOut').click(function() {
-            if (confirm('确定要退出登录吗？')) {
-                sessionStorage.clear();
-                window.location.href = 'index.html';
-            }
-        });
-
-        // 宿管操作函数
-        window.editAdmin = async function(id, adminNo) {
-            // 权限检查
-            if (!isSupervisor()) {
-                alert('权限不足：只有主管可以编辑宿管信息');
-                return;
-            }
-
-            try {
-                const admin = await MockData.admin.getById(id);
-
-                if (admin.success === false) {
-                    alert('获取宿管信息失败: ' + admin.message);
-                    return;
-                }
-
-                // 弹出编辑表单
-                const newName = prompt('请输入新姓名:', admin.name || '');
-                if (newName === null) return;
-                if (!newName.trim()) {
-                    alert('姓名不能为空');
-                    return;
-                }
-
-                const newPhone = prompt('请输入手机号:', admin.phone || '');
-                if (newPhone === null) return;
-                if (!newPhone.trim()) {
-                    alert('手机号不能为空');
-                    return;
-                }
-
-                const newEmail = prompt('请输入邮箱:', admin.email || '');
-                const newBuilding = prompt('请输入管理楼栋(A栋/B栋/C栋等):', admin.buildingNo || '');
-                const newRole = prompt('请输入角色(普通宿管/主管):', admin.role || '普通宿管');
-
-                if (!newBuilding.trim()) {
-                    alert('管理楼栋不能为空');
-                    return;
-                }
-
-                if (!newRole.trim() || !['普通宿管', '主管'].includes(newRole.trim())) {
-                    alert('角色必须为"普通宿管"或"主管"');
-                    return;
-                }
-
-                const updateData = {
-                    adminId: id,
-                    name: newName.trim(),
-                    phone: newPhone.trim(),
-                    email: newEmail ? newEmail.trim() : '',
-                    buildingNo: newBuilding.trim(),
-                    role: newRole.trim()
-                };
-
-                const result = await MockData.admin.update(updateData);
-
-                if (result.success) {
-                    alert('修改成功');
-                    loadAdmins();
-                } else {
-                    alert('修改失败: ' + result.message);
-                }
-            } catch (error) {
-                console.error('编辑宿管失败:', error);
-                alert('操作失败，请稍后重试');
-            }
-        };
-
-        window.viewAdmin = async function(id, adminNo) {
-            try {
-                const admin = await MockData.admin.getById(id);
-
-                if (admin.success === false) {
-                    alert('获取宿管信息失败: ' + admin.message);
-                    return;
-                }
-
-                let info = `======== 宿管详情 ========\n\n`;
-                info += `工号: ${admin.adminNo || '无'}\n`;
-                info += `姓名: ${admin.name || '未知'}\n`;
-                info += `手机: ${admin.phone || '无'}\n`;
-                info += `邮箱: ${admin.email || '无'}\n`;
-                info += `楼栋: ${admin.buildingNo || '未分配'}\n`;
-                info += `角色: ${admin.role || '普通宿管'}\n`;
-                if (admin.createdAt) {
-                    const date = new Date(admin.createdAt);
-                    info += `入职时间: ${date.toLocaleDateString('zh-CN')} ${date.toLocaleTimeString('zh-CN')}\n`;
-                }
-                info += `\n==========================`;
-
-                alert(info);
-            } catch (error) {
-                console.error('查看宿管详情失败:', error);
-                alert('获取宿管信息失败');
-            }
-        };
-
-        window.deleteAdmin = async function(id, name) {
-            // 权限检查
-            if (!isSupervisor()) {
-                alert('权限不足：只有主管可以删除宿管');
-                return;
-            }
-
-            // 防止删除自己
-            const currentAdminNo = sessionStorage.getItem('adminNo');
-            const admin = await MockData.admin.getById(id);
-            if (admin && admin.adminNo === currentAdminNo) {
-                alert('不能删除自己的账户');
-                return;
-            }
-
-            if (!confirm(`确定要删除宿管 "${name}" 吗？此操作不可恢复。`)) {
-                return;
-            }
-
-            try {
-                const result = await MockData.admin.remove(id);
-
-                if (result.success) {
-                    alert('删除成功');
-                    loadAdmins();
-                } else {
-                    alert('删除失败: ' + result.message);
-                }
-            } catch (error) {
-                console.error('删除宿管失败:', error);
-                alert('操作失败，请稍后重试');
-            }
-        };
-
-        // 更新UI权限
-        function updateUIByPermission() {
-            const role = sessionStorage.getItem('role') || '普通宿管';
-            const name = sessionStorage.getItem('name') || '';
-
-            console.log('当前用户:', name, '角色:', role);
-
-            // 更新右上角用户信息
-            $('#loginUser').text(name + (role === '主管' ? ' (主管)' : ''));
-
-            // 如果不是主管，隐藏添加按钮
-            if (role !== '主管') {
-                const addBtn = document.getElementById('addAdminBtn');
-                if (addBtn) addBtn.style.display = 'none';
-            } else {
-                const addBtn = document.getElementById('addAdminBtn');
-                if (addBtn) addBtn.style.display = 'flex';
-            }
+            let result;
+            if (editingId > 0) { data.id = editingId; result = updateDormAdmin(data); }
+            else { result = addDormAdmin(data); }
+            if (result.success) {
+                showToast(editingId > 0 ? '更新成功' : '添加成功', 'success');
+                closeModal(); loadTable();
+            } else { showToast(result.message, 'error'); }
+            return false;
         }
 
-        // 页面初始化
-        function initializePage() {
-            if (!checkLogin()) return;
-
-            // 加载宿管数据
-            loadAdmins();
-
-            // 更新UI
-            updateUIByPermission();
+        function handleDelete(id, name) {
+            if (!confirm('确定要删除宿管 ' + name + ' 吗？')) return;
+            const result = deleteDormAdmin(id);
+            if (result.success) { showToast('删除成功', 'success'); loadTable(); }
+            else { showToast(result.message, 'error'); }
         }
 
-        // 执行初始化
-        initializePage();
-    });
-</script>
-
-<!-- 引入演示版提示条 -->
-<script src="demo-banner.js"></script>
+        loadTable();
+        document.getElementById('adminModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+    </script>
 </body>
 </html>

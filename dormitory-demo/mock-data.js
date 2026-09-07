@@ -1,603 +1,483 @@
 /**
- * 宿舍管理系统 - 模拟数据模块
- * 所有数据存储在 localStorage 中，模拟后端 API 行为
- * 使用 setTimeout 模拟网络延迟
+ * 宿舍管理系统 - 演示版 Mock 数据
+ * 所有数据存储在 localStorage 中
  */
 
-(function(global) {
-  'use strict';
+// ========== 演示版提示条 ==========
+function addDemoBanner() {
+    if (document.getElementById('demoBanner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'demoBanner';
+    banner.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: #000;
+        color: #fff;
+        text-align: center;
+        padding: 10px 20px;
+        font-size: 13px;
+        font-weight: 500;
+        z-index: 10000;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #333;
+        font-family: Inter, system-ui, sans-serif;
+    `;
+    banner.innerHTML = '<i class="fa fa-info-circle"></i> 演示版 - 所有数据均为模拟，仅供演示使用';
+    document.body.appendChild(banner);
+    document.body.style.paddingTop = '44px';
+}
 
-  // ============ 存储键名 ============
-  const STORAGE_KEYS = {
-    STUDENTS: 'dormitory_students',
-    DORMS: 'dormitory_dorms',
-    ADMINS: 'dormitory_admins',
-    CURRENT_LOGIN: 'dormitory_current_login'
-  };
+// ========== 数据初始化 ==========
+const STORAGE_KEYS = {
+    STUDENTS: 'dorm_mock_students',
+    DORMS: 'dorm_mock_dorms',
+    DORM_ADMINS: 'dorm_mock_dormadmins',
+    CURRENT_USER: 'dorm_current_user',
+    INITIALIZED: 'dorm_mock_initialized'
+};
 
-  // ============ 默认模拟数据 ============
-  const DEFAULT_DORMS = [
-    { dormId: 1, buildingNo: 'A栋', dormNo: '101', floorNo: 1, roomType: '4人间', capacity: 4, currentCount: 3, status: 'available', createdAt: '2024-01-15T08:00:00' },
-    { dormId: 2, buildingNo: 'A栋', dormNo: '102', floorNo: 1, roomType: '4人间', capacity: 4, currentCount: 4, status: 'full', createdAt: '2024-01-15T08:00:00' },
-    { dormId: 3, buildingNo: 'A栋', dormNo: '201', floorNo: 2, roomType: '6人间', capacity: 6, currentCount: 4, status: 'available', createdAt: '2024-01-15T08:00:00' },
-    { dormId: 4, buildingNo: 'A栋', dormNo: '202', floorNo: 2, roomType: '4人间', capacity: 4, currentCount: 2, status: 'available', createdAt: '2024-01-15T08:00:00' },
-    { dormId: 5, buildingNo: 'B栋', dormNo: '101', floorNo: 1, roomType: '4人间', capacity: 4, currentCount: 4, status: 'full', createdAt: '2024-02-10T09:00:00' },
-    { dormId: 6, buildingNo: 'B栋', dormNo: '102', floorNo: 1, roomType: '2人间', capacity: 2, currentCount: 1, status: 'available', createdAt: '2024-02-10T09:00:00' },
-    { dormId: 7, buildingNo: 'B栋', dormNo: '301', floorNo: 3, roomType: '6人间', capacity: 6, currentCount: 6, status: 'full', createdAt: '2024-02-10T09:00:00' },
-    { dormId: 8, buildingNo: 'C栋', dormNo: '101', floorNo: 1, roomType: '8人间', capacity: 8, currentCount: 5, status: 'available', createdAt: '2024-03-05T10:00:00' },
-    { dormId: 9, buildingNo: 'C栋', dormNo: '201', floorNo: 2, roomType: '4人间', capacity: 4, currentCount: 0, status: 'maintenance', createdAt: '2024-03-05T10:00:00' },
-    { dormId: 10, buildingNo: 'C栋', dormNo: '301', floorNo: 3, roomType: '4人间', capacity: 4, currentCount: 3, status: 'available', createdAt: '2024-03-05T10:00:00' },
-    { dormId: 11, buildingNo: 'D栋', dormNo: '101', floorNo: 1, roomType: '2人间', capacity: 2, currentCount: 2, status: 'full', createdAt: '2024-04-01T11:00:00' },
-    { dormId: 12, buildingNo: 'D栋', dormNo: '201', floorNo: 2, roomType: '4人间', capacity: 4, currentCount: 1, status: 'available', createdAt: '2024-04-01T11:00:00' },
-  ];
+function initMockData() {
+    if (localStorage.getItem(STORAGE_KEYS.INITIALIZED)) return;
 
-  const DEFAULT_STUDENTS = [
-    { studentId: 1, studentNo: '2024001', name: '张三', gender: '男', phone: '13800138001', email: 'zhangsan@example.com', className: '计算机科学与技术1班', dormId: 1, buildingNo: 'A栋', dormNo: '101', password: '123456', status: '在校', createdAt: '2024-09-01T08:00:00' },
-    { studentId: 2, studentNo: '2024002', name: '李四', gender: '男', phone: '13800138002', email: 'lisi@example.com', className: '计算机科学与技术1班', dormId: 1, buildingNo: 'A栋', dormNo: '101', password: '123456', status: '在校', createdAt: '2024-09-01T08:00:00' },
-    { studentId: 3, studentNo: '2024003', name: '王五', gender: '男', phone: '13800138003', email: 'wangwu@example.com', className: '计算机科学与技术1班', dormId: 1, buildingNo: 'A栋', dormNo: '101', password: '123456', status: '在校', createdAt: '2024-09-01T08:00:00' },
-    { studentId: 4, studentNo: '2024004', name: '赵六', gender: '男', phone: '13800138004', email: 'zhaoliu@example.com', className: '软件工程2班', dormId: 2, buildingNo: 'A栋', dormNo: '102', password: '123456', status: '在校', createdAt: '2024-09-01T08:00:00' },
-    { studentId: 5, studentNo: '2024005', name: '钱七', gender: '男', phone: '13800138005', email: 'qianqi@example.com', className: '软件工程2班', dormId: 2, buildingNo: 'A栋', dormNo: '102', password: '123456', status: '在校', createdAt: '2024-09-01T08:00:00' },
-    { studentId: 6, studentNo: '2024006', name: '孙八', gender: '男', phone: '13800138006', email: 'sunba@example.com', className: '软件工程2班', dormId: 2, buildingNo: 'A栋', dormNo: '102', password: '123456', status: '在校', createdAt: '2024-09-01T08:00:00' },
-    { studentId: 7, studentNo: '2024007', name: '周九', gender: '男', phone: '13800138007', email: 'zhoujiu@example.com', className: '软件工程2班', dormId: 2, buildingNo: 'A栋', dormNo: '102', password: '123456', status: '在校', createdAt: '2024-09-01T08:00:00' },
-    { studentId: 8, studentNo: '2024008', name: '吴十', gender: '女', phone: '13800138008', email: 'wushi@example.com', className: '数据科学3班', dormId: 5, buildingNo: 'B栋', dormNo: '101', password: '123456', status: '在校', createdAt: '2024-09-02T08:00:00' },
-    { studentId: 9, studentNo: '2024009', name: '郑十一', gender: '女', phone: '13800138009', email: 'zheng11@example.com', className: '数据科学3班', dormId: 5, buildingNo: 'B栋', dormNo: '101', password: '123456', status: '在校', createdAt: '2024-09-02T08:00:00' },
-    { studentId: 10, studentNo: '2024010', name: '王十二', gender: '女', phone: '13800138010', email: 'wang12@example.com', className: '数据科学3班', dormId: 5, buildingNo: 'B栋', dormNo: '101', password: '123456', status: '在校', createdAt: '2024-09-02T08:00:00' },
-    { studentId: 11, studentNo: '2024011', name: '冯十三', gender: '女', phone: '13800138011', email: 'feng13@example.com', className: '数据科学3班', dormId: 5, buildingNo: 'B栋', dormNo: '101', password: '123456', status: '在校', createdAt: '2024-09-02T08:00:00' },
-    { studentId: 12, studentNo: '2024012', name: '陈十四', gender: '女', phone: '13800138012', email: 'chen14@example.com', className: '人工智能1班', dormId: 6, buildingNo: 'B栋', dormNo: '102', password: '123456', status: '在校', createdAt: '2024-09-02T08:00:00' },
-    { studentId: 13, studentNo: '2024013', name: '褚十五', gender: '男', phone: '13800138013', email: 'chu15@example.com', className: '网络工程1班', dormId: 0, buildingNo: '', dormNo: '', password: '123456', status: '在校', createdAt: '2024-09-03T08:00:00' },
-    { studentId: 14, studentNo: '2024014', name: '卫十六', gender: '男', phone: '13800138014', email: 'wei16@example.com', className: '网络工程1班', dormId: 0, buildingNo: '', dormNo: '', password: '123456', status: '退宿', createdAt: '2024-09-03T08:00:00' },
-    { studentId: 15, studentNo: '2024015', name: '蒋十七', gender: '女', phone: '13800138015', email: 'jiang17@example.com', className: '物联网2班', dormId: 7, buildingNo: 'B栋', dormNo: '301', password: '123456', status: '在校', createdAt: '2024-09-03T08:00:00' },
-  ];
+    const dorms = [
+        { dormId: 1, dormNo: '101', buildingNo: 'A栋', capacity: 4, currentCount: 3, roomType: '4人间', fee: 1200 },
+        { dormId: 2, dormNo: '102', buildingNo: 'A栋', capacity: 4, currentCount: 4, roomType: '4人间', fee: 1200 },
+        { dormId: 3, dormNo: '103', buildingNo: 'A栋', capacity: 4, currentCount: 2, roomType: '4人间', fee: 1200 },
+        { dormId: 4, dormNo: '201', buildingNo: 'A栋', capacity: 6, currentCount: 4, roomType: '6人间', fee: 800 },
+        { dormId: 5, dormNo: '202', buildingNo: 'A栋', capacity: 6, currentCount: 5, roomType: '6人间', fee: 800 },
+        { dormId: 6, dormNo: '301', buildingNo: 'B栋', capacity: 4, currentCount: 3, roomType: '4人间', fee: 1200 },
+        { dormId: 7, dormNo: '302', buildingNo: 'B栋', capacity: 4, currentCount: 0, roomType: '4人间', fee: 1200 },
+        { dormId: 8, dormNo: '303', buildingNo: 'B栋', capacity: 4, currentCount: 4, roomType: '4人间', fee: 1200 },
+        { dormId: 9, dormNo: '401', buildingNo: 'B栋', capacity: 6, currentCount: 2, roomType: '6人间', fee: 800 },
+        { dormId: 10, dormNo: '402', buildingNo: 'B栋', capacity: 6, currentCount: 6, roomType: '6人间', fee: 800 },
+        { dormId: 11, dormNo: '501', buildingNo: 'C栋', capacity: 4, currentCount: 1, roomType: '4人间', fee: 1200 },
+        { dormId: 12, dormNo: '502', buildingNo: 'C栋', capacity: 4, currentCount: 3, roomType: '4人间', fee: 1200 },
+        { dormId: 13, dormNo: '503', buildingNo: 'C栋', capacity: 4, currentCount: 2, roomType: '4人间', fee: 1200 },
+        { dormId: 14, dormNo: '601', buildingNo: 'C栋', capacity: 6, currentCount: 0, roomType: '6人间', fee: 800 },
+        { dormId: 15, dormNo: '602', buildingNo: 'C栋', capacity: 6, currentCount: 4, roomType: '6人间', fee: 800 }
+    ];
 
-  const DEFAULT_ADMINS = [
-    { adminId: 1, adminNo: 'D001', name: '李主管', phone: '13900139001', email: 'lizhuguan@example.com', buildingNo: 'A栋', role: '主管', password: '123456', createdAt: '2023-06-01T08:00:00' },
-    { adminId: 2, adminNo: 'D002', name: '王阿姨', phone: '13900139002', email: 'wangayi@example.com', buildingNo: 'A栋', role: '普通宿管', password: '123456', createdAt: '2023-08-15T08:00:00' },
-    { adminId: 3, adminNo: 'D003', name: '张阿姨', phone: '13900139003', email: 'zhangayi@example.com', buildingNo: 'B栋', role: '普通宿管', password: '123456', createdAt: '2023-09-01T08:00:00' },
-    { adminId: 4, adminNo: 'D004', name: '刘师傅', phone: '13900139004', email: 'liushifu@example.com', buildingNo: 'C栋', role: '普通宿管', password: '123456', createdAt: '2024-01-10T08:00:00' },
-    { adminId: 5, adminNo: 'D005', name: '陈阿姨', phone: '13900139005', email: 'chenayi@example.com', buildingNo: 'D栋', role: '普通宿管', password: '123456', createdAt: '2024-03-20T08:00:00' },
-  ];
+    const students = [
+        { studentId: 1, studentNo: '2024001', name: '张三', gender: '男', className: '计算机1班', phone: '13800138001', email: 'zhangsan@example.com', dormId: 1, dormNo: '101', buildingNo: 'A栋', status: '在校', password: '123456' },
+        { studentId: 2, studentNo: '2024002', name: '李四', gender: '男', className: '计算机1班', phone: '13800138002', email: 'lisi@example.com', dormId: 1, dormNo: '101', buildingNo: 'A栋', status: '在校', password: '123456' },
+        { studentId: 3, studentNo: '2024003', name: '王五', gender: '男', className: '计算机2班', phone: '13800138003', email: 'wangwu@example.com', dormId: 1, dormNo: '101', buildingNo: 'A栋', status: '在校', password: '123456' },
+        { studentId: 4, studentNo: '2024004', name: '赵六', gender: '男', className: '计算机2班', phone: '13800138004', email: 'zhaoliu@example.com', dormId: 2, dormNo: '102', buildingNo: 'A栋', status: '在校', password: '123456' },
+        { studentId: 5, studentNo: '2024005', name: '钱七', gender: '男', className: '软件工程1班', phone: '13800138005', email: 'qianqi@example.com', dormId: 2, dormNo: '102', buildingNo: 'A栋', status: '在校', password: '123456' },
+        { studentId: 6, studentNo: '2024006', name: '孙八', gender: '男', className: '软件工程1班', phone: '13800138006', email: 'sunba@example.com', dormId: 2, dormNo: '102', buildingNo: 'A栋', status: '在校', password: '123456' },
+        { studentId: 7, studentNo: '2024007', name: '周九', gender: '男', className: '软件工程2班', phone: '13800138007', email: 'zhoujiu@example.com', dormId: 2, dormNo: '102', buildingNo: 'A栋', status: '在校', password: '123456' },
+        { studentId: 8, studentNo: '2024008', name: '吴十', gender: '男', className: '软件工程2班', phone: '13800138008', email: 'wushi@example.com', dormId: 3, dormNo: '103', buildingNo: 'A栋', status: '退宿', password: '123456' },
+        { studentId: 9, studentNo: '2024009', name: '郑十一', gender: '男', className: '网络工程1班', phone: '13800138009', email: 'zheng11@example.com', dormId: 3, dormNo: '103', buildingNo: 'A栋', status: '在校', password: '123456' },
+        { studentId: 10, studentNo: '2024010', name: '王小红', gender: '女', className: '网络工程1班', phone: '13800138010', email: 'wangxh@example.com', dormId: 4, dormNo: '201', buildingNo: 'A栋', status: '在校', password: '123456' },
+        { studentId: 11, studentNo: '2024011', name: '李小花', gender: '女', className: '网络工程2班', phone: '13800138011', email: 'lixh@example.com', dormId: 4, dormNo: '201', buildingNo: 'A栋', status: '在校', password: '123456' },
+        { studentId: 12, studentNo: '2024012', name: '张小美', gender: '女', className: '网络工程2班', phone: '13800138012', email: 'zhangxm@example.com', dormId: 4, dormNo: '201', buildingNo: 'A栋', status: '在校', password: '123456' },
+        { studentId: 13, studentNo: '2024013', name: '刘小丽', gender: '女', className: '物联网1班', phone: '13800138013', email: 'liuxl@example.com', dormId: 4, dormNo: '201', buildingNo: 'A栋', status: '退宿', password: '123456' },
+        { studentId: 14, studentNo: '2024014', name: '陈小芳', gender: '女', className: '物联网1班', phone: '13800138014', email: 'chenxf@example.com', dormId: 5, dormNo: '202', buildingNo: 'A栋', status: '在校', password: '123456' },
+        { studentId: 15, studentNo: '2024015', name: '杨小燕', gender: '女', className: '物联网2班', phone: '13800138015', email: 'yangxy@example.com', dormId: 5, dormNo: '202', buildingNo: 'A栋', status: '在校', password: '123456' },
+        { studentId: 16, studentNo: '2024016', name: '黄小军', gender: '男', className: '人工智能1班', phone: '13800138016', email: 'huangxj@example.com', dormId: 6, dormNo: '301', buildingNo: 'B栋', status: '在校', password: '123456' },
+        { studentId: 17, studentNo: '2024017', name: '朱小伟', gender: '男', className: '人工智能1班', phone: '13800138017', email: 'zhuxw@example.com', dormId: 6, dormNo: '301', buildingNo: 'B栋', status: '在校', password: '123456' },
+        { studentId: 18, studentNo: '2024018', name: '林小强', gender: '男', className: '人工智能2班', phone: '13800138018', email: 'linxq@example.com', dormId: 6, dormNo: '301', buildingNo: 'B栋', status: '在校', password: '123456' },
+        { studentId: 19, studentNo: '2024019', name: '何小明', gender: '男', className: '人工智能2班', phone: '13800138019', email: 'hexm@example.com', dormId: 8, dormNo: '303', buildingNo: 'B栋', status: '在校', password: '123456' },
+        { studentId: 20, studentNo: '2024020', name: '罗小勇', gender: '男', className: '大数据1班', phone: '13800138020', email: 'luoxy@example.com', dormId: 8, dormNo: '303', buildingNo: 'B栋', status: '在校', password: '123456' }
+    ];
 
-  // ============ 工具函数 ============
+    const dormAdmins = [
+        { id: 1, adminNo: 'AD001', name: '王阿姨', buildingNo: 'A栋', role: '主管', phone: '13900139001', email: 'wangayi@example.com', password: '123456' },
+        { id: 2, adminNo: 'AD002', name: '李阿姨', buildingNo: 'A栋', role: '普通宿管', phone: '13900139002', email: 'liayi@example.com', password: '123456' },
+        { id: 3, adminNo: 'AD003', name: '张叔叔', buildingNo: 'B栋', role: '主管', phone: '13900139003', email: 'zhangss@example.com', password: '123456' },
+        { id: 4, adminNo: 'AD004', name: '刘叔叔', buildingNo: 'B栋', role: '普通宿管', phone: '13900139004', email: 'liuss@example.com', password: '123456' },
+        { id: 5, adminNo: 'AD005', name: '陈阿姨', buildingNo: 'C栋', role: '主管', phone: '13900139005', email: 'chenayi@example.com', password: '123456' },
+        { id: 6, adminNo: 'AD006', name: '赵阿姨', buildingNo: 'C栋', role: '普通宿管', phone: '13900139006', email: 'zhaoyi@example.com', password: '123456' }
+    ];
 
-  // 模拟网络延迟
-  function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms || 300));
-  }
+    localStorage.setItem(STORAGE_KEYS.DORMS, JSON.stringify(dorms));
+    localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
+    localStorage.setItem(STORAGE_KEYS.DORM_ADMINS, JSON.stringify(dormAdmins));
+    localStorage.setItem(STORAGE_KEYS.INITIALIZED, 'true');
+}
 
-  // 从 localStorage 获取数据
-  function getStorageData(key, defaultData) {
-    try {
-      const data = localStorage.getItem(key);
-      if (data) {
-        return JSON.parse(data);
-      }
-    } catch (e) {
-      console.warn('读取 localStorage 失败:', e);
+initMockData();
+
+// ========== 数据访问 ==========
+function getDorms() { return JSON.parse(localStorage.getItem(STORAGE_KEYS.DORMS) || '[]'); }
+function saveDorms(d) { localStorage.setItem(STORAGE_KEYS.DORMS, JSON.stringify(d)); }
+function getStudents() { return JSON.parse(localStorage.getItem(STORAGE_KEYS.STUDENTS) || '[]'); }
+function saveStudents(s) { localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(s)); }
+function getDormAdmins() { return JSON.parse(localStorage.getItem(STORAGE_KEYS.DORM_ADMINS) || '[]'); }
+function saveDormAdmins(a) { localStorage.setItem(STORAGE_KEYS.DORM_ADMINS, JSON.stringify(a)); }
+
+function getCurrentUser() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER) || 'null');
+}
+function setCurrentUser(user) {
+    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+}
+function clearCurrentUser() {
+    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+}
+
+// ========== 认证 ==========
+function studentLogin(studentNo, password) {
+    const students = getStudents();
+    const s = students.find(x => x.studentNo === studentNo && x.password === password);
+    if (!s) return { success: false, message: '学号或密码错误' };
+    if (s.status === '退宿') return { success: false, message: '您已退宿，无法登录' };
+    const user = { ...s, role: 'student' };
+    delete user.password;
+    setCurrentUser(user);
+    return { success: true, user };
+}
+
+function adminLogin(adminNo, password) {
+    const admins = getDormAdmins();
+    const a = admins.find(x => x.adminNo === adminNo && x.password === password);
+    if (!a) return { success: false, message: '工号或密码错误' };
+    const user = { ...a, role: 'admin' };
+    delete user.password;
+    setCurrentUser(user);
+    return { success: true, user };
+}
+
+function logout() {
+    clearCurrentUser();
+    window.location.href = 'index.html';
+}
+
+function requireLogin() {
+    const user = getCurrentUser();
+    if (!user) {
+        window.location.href = 'index.html';
+        return null;
     }
-    // 初始化默认数据
-    localStorage.setItem(key, JSON.stringify(defaultData));
-    return [...defaultData];
-  }
+    return user;
+}
 
-  // 保存数据到 localStorage
-  function setStorageData(key, data) {
-    try {
-      localStorage.setItem(key, JSON.stringify(data));
-    } catch (e) {
-      console.warn('写入 localStorage 失败:', e);
+function requireAdmin() {
+    const user = requireLogin();
+    if (user && user.role !== 'admin') {
+        window.location.href = 'profile.html';
+        return null;
     }
-  }
+    return user;
+}
 
-  // 生成新的 ID
-  function generateNextId(items, idField) {
-    if (!items || items.length === 0) return 1;
-    const maxId = items.reduce((max, item) => Math.max(max, item[idField] || 0), 0);
-    return maxId + 1;
-  }
-
-  // ============ 学生相关 API ============
-
-  const MockStudentAPI = {
-    // 学生登录
-    async login(studentNo, password) {
-      await delay(500);
-      const students = getStorageData(STORAGE_KEYS.STUDENTS, DEFAULT_STUDENTS);
-      const student = students.find(s => s.studentNo === studentNo && s.password === password);
-
-      if (student) {
-        const studentInfo = { ...student };
-        delete studentInfo.password;
-        return { success: true, student: studentInfo, message: '登录成功' };
-      }
-      return { success: false, message: '学号或密码错误' };
-    },
-
-    // 学生注册
-    async register(data) {
-      await delay(600);
-      const students = getStorageData(STORAGE_KEYS.STUDENTS, DEFAULT_STUDENTS);
-
-      // 检查学号是否已存在
-      if (students.some(s => s.studentNo === data.studentNo)) {
-        return { success: false, message: '该学号已被注册' };
-      }
-
-      const newStudent = {
-        studentId: generateNextId(students, 'studentId'),
-        studentNo: data.studentNo,
-        name: data.name,
-        gender: data.gender || '男',
-        phone: data.phone || '',
-        email: data.email || '',
-        className: data.className || '',
-        dormId: data.dormId || 0,
-        buildingNo: data.buildingNo || '',
-        dormNo: data.dormNo || '',
-        password: data.password,
-        status: data.dormId && data.dormId > 0 ? '在校' : '',
-        createdAt: new Date().toISOString()
-      };
-
-      // 如果分配了宿舍，更新宿舍人数
-      if (newStudent.dormId > 0) {
-        const dorms = getStorageData(STORAGE_KEYS.DORMS, DEFAULT_DORMS);
-        const dorm = dorms.find(d => d.dormId === newStudent.dormId);
-        if (dorm) {
-          newStudent.buildingNo = dorm.buildingNo;
-          newStudent.dormNo = dorm.dormNo;
-          dorm.currentCount = (dorm.currentCount || 0) + 1;
-          if (dorm.currentCount >= dorm.capacity) {
-            dorm.status = 'full';
-          }
-          setStorageData(STORAGE_KEYS.DORMS, dorms);
-        }
-      }
-
-      students.push(newStudent);
-      setStorageData(STORAGE_KEYS.STUDENTS, students);
-
-      const studentInfo = { ...newStudent };
-      delete studentInfo.password;
-      return { success: true, student: studentInfo, autoLogin: true, message: '注册成功' };
-    },
-
-    // 获取学生信息（通过ID）
-    async getById(id) {
-      await delay(200);
-      const students = getStorageData(STORAGE_KEYS.STUDENTS, DEFAULT_STUDENTS);
-      const student = students.find(s => s.studentId === id || s.id === id);
-      if (student) {
-        return { ...student };
-      }
-      return { success: false, message: '学生不存在' };
-    },
-
-    // 获取学生信息（通过学号）
-    async getByNo(studentNo) {
-      await delay(200);
-      const students = getStorageData(STORAGE_KEYS.STUDENTS, DEFAULT_STUDENTS);
-      const student = students.find(s => s.studentNo === studentNo);
-      if (student) {
-        return { ...student };
-      }
-      return { success: false, message: '学生不存在' };
-    },
-
-    // 获取所有学生列表
-    async list() {
-      await delay(300);
-      const students = getStorageData(STORAGE_KEYS.STUDENTS, DEFAULT_STUDENTS);
-      return students.map(s => {
-        const info = { ...s };
-        delete info.password;
-        return info;
-      });
-    },
-
-    // 根据宿舍获取学生
-    async getByDorm(dormId) {
-      await delay(200);
-      const students = getStorageData(STORAGE_KEYS.STUDENTS, DEFAULT_STUDENTS);
-      return students
-        .filter(s => s.dormId === dormId && s.status !== '退宿')
-        .map(s => {
-          const info = { ...s };
-          delete info.password;
-          return info;
-        });
-    },
-
-    // 更新学生信息
-    async update(data) {
-      await delay(300);
-      const students = getStorageData(STORAGE_KEYS.STUDENTS, DEFAULT_STUDENTS);
-      const index = students.findIndex(s => s.studentId === data.studentId || s.id === data.studentId);
-
-      if (index === -1) {
-        return { success: false, message: '学生不存在' };
-      }
-
-      // 保留原密码
-      const originalPassword = students[index].password;
-      students[index] = { ...students[index], ...data, password: originalPassword };
-      setStorageData(STORAGE_KEYS.STUDENTS, students);
-
-      return { success: true, message: '更新成功' };
-    },
-
-    // 添加学生
-    async add(data) {
-      await delay(400);
-      const students = getStorageData(STORAGE_KEYS.STUDENTS, DEFAULT_STUDENTS);
-
-      if (students.some(s => s.studentNo === data.studentNo)) {
-        return { success: false, message: '该学号已存在' };
-      }
-
-      const newStudent = {
-        studentId: generateNextId(students, 'studentId'),
-        studentNo: data.studentNo,
-        name: data.name,
-        gender: data.gender || '男',
-        phone: data.phone || '',
-        email: data.email || '',
-        className: data.className || '',
-        dormId: data.dormId || 0,
-        buildingNo: data.buildingNo || '',
-        dormNo: data.dormNo || '',
-        password: data.password || '123456',
-        status: data.status || (data.dormId && data.dormId > 0 ? '在校' : ''),
-        createdAt: new Date().toISOString()
-      };
-
-      // 如果分配了宿舍，更新宿舍人数
-      if (newStudent.dormId > 0) {
-        const dorms = getStorageData(STORAGE_KEYS.DORMS, DEFAULT_DORMS);
-        const dorm = dorms.find(d => d.dormId === newStudent.dormId);
-        if (dorm) {
-          newStudent.buildingNo = dorm.buildingNo;
-          newStudent.dormNo = dorm.dormNo;
-          dorm.currentCount = (dorm.currentCount || 0) + 1;
-          if (dorm.currentCount >= dorm.capacity) {
-            dorm.status = 'full';
-          }
-          setStorageData(STORAGE_KEYS.DORMS, dorms);
-        }
-      }
-
-      students.push(newStudent);
-      setStorageData(STORAGE_KEYS.STUDENTS, students);
-
-      return { success: true, message: '添加成功' };
-    },
-
-    // 删除学生
-    async remove(id) {
-      await delay(300);
-      const students = getStorageData(STORAGE_KEYS.STUDENTS, DEFAULT_STUDENTS);
-      const index = students.findIndex(s => s.studentId === id || s.id === id);
-
-      if (index === -1) {
-        return { success: false, message: '学生不存在' };
-      }
-
-      const student = students[index];
-      // 如果学生有宿舍，更新宿舍人数
-      if (student.dormId && student.dormId > 0 && student.status !== '退宿') {
-        const dorms = getStorageData(STORAGE_KEYS.DORMS, DEFAULT_DORMS);
-        const dorm = dorms.find(d => d.dormId === student.dormId);
-        if (dorm && dorm.currentCount > 0) {
-          dorm.currentCount--;
-          if (dorm.currentCount < dorm.capacity && dorm.status === 'full') {
-            dorm.status = 'available';
-          }
-          setStorageData(STORAGE_KEYS.DORMS, dorms);
-        }
-      }
-
-      students.splice(index, 1);
-      setStorageData(STORAGE_KEYS.STUDENTS, students);
-
-      return { success: true, message: '删除成功' };
-    },
-
-    // 学生退宿
-    async moveOut(studentId) {
-      await delay(400);
-      const students = getStorageData(STORAGE_KEYS.STUDENTS, DEFAULT_STUDENTS);
-      const index = students.findIndex(s => s.studentId === studentId || s.id === studentId);
-
-      if (index === -1) {
-        return { success: false, message: '学生不存在' };
-      }
-
-      const student = students[index];
-      const dormId = student.dormId;
-
-      // 更新学生状态
-      students[index].status = '退宿';
-      students[index].dormId = 0;
-      students[index].buildingNo = '';
-      students[index].dormNo = '';
-      setStorageData(STORAGE_KEYS.STUDENTS, students);
-
-      // 更新宿舍人数
-      if (dormId && dormId > 0) {
-        const dorms = getStorageData(STORAGE_KEYS.DORMS, DEFAULT_DORMS);
-        const dorm = dorms.find(d => d.dormId === dormId);
-        if (dorm && dorm.currentCount > 0) {
-          dorm.currentCount--;
-          if (dorm.currentCount < dorm.capacity && dorm.status === 'full') {
-            dorm.status = 'available';
-          }
-          setStorageData(STORAGE_KEYS.DORMS, dorms);
-        }
-      }
-
-      return { success: true, message: '退宿成功' };
-    },
-
-    // 检查登录状态
-    async checkLogin() {
-      await delay(100);
-      const loginType = sessionStorage.getItem('loginType');
-      const studentStr = sessionStorage.getItem('student');
-
-      if (loginType === 'student' && studentStr) {
-        try {
-          const student = JSON.parse(studentStr);
-          return { success: true, isLogin: true, student: student, data: student };
-        } catch (e) {
-          // ignore
-        }
-      }
-      return { success: false, isLogin: false };
+// ========== 学生管理 ==========
+function getStudentPage(page, size, keyword) {
+    let list = getStudents();
+    if (keyword) {
+        const kw = keyword.toLowerCase();
+        list = list.filter(s =>
+            s.studentNo.toLowerCase().includes(kw) ||
+            s.name.toLowerCase().includes(kw) ||
+            (s.className && s.className.toLowerCase().includes(kw))
+        );
     }
-  };
+    const total = list.length;
+    const start = (page - 1) * size;
+    const pageList = list.slice(start, start + size);
+    return { list: pageList, total, page, size, totalPages: Math.ceil(total / size) || 1 };
+}
 
-  // ============ 宿舍相关 API ============
+function addStudent(student) {
+    const students = getStudents();
+    if (students.find(s => s.studentNo === student.studentNo)) {
+        return { success: false, message: '学号已存在' };
+    }
+    const newId = students.length > 0 ? Math.max(...students.map(s => s.studentId)) + 1 : 1;
+    let dormNo = '', buildingNo = '';
+    if (student.dormId && student.dormId > 0) {
+        const dorm = getDorms().find(d => d.dormId === student.dormId);
+        if (dorm) { dormNo = dorm.dormNo; buildingNo = dorm.buildingNo; }
+    }
+    const newStudent = {
+        studentId: newId,
+        studentNo: student.studentNo,
+        name: student.name,
+        gender: student.gender || '',
+        className: student.className || '',
+        phone: student.phone || '',
+        email: student.email || '',
+        dormId: parseInt(student.dormId) || 0,
+        dormNo, buildingNo,
+        status: student.status || '在校',
+        password: student.password || '123456'
+    };
+    students.push(newStudent);
+    saveStudents(students);
 
-  const MockDormAPI = {
-    // 获取宿舍列表
-    async list() {
-      await delay(300);
-      return getStorageData(STORAGE_KEYS.DORMS, DEFAULT_DORMS);
-    },
+    if (newStudent.dormId > 0) {
+        const dorms = getDorms();
+        const idx = dorms.findIndex(d => d.dormId === newStudent.dormId);
+        if (idx !== -1) { dorms[idx].currentCount = (dorms[idx].currentCount || 0) + 1; saveDorms(dorms); }
+    }
+    return { success: true, student: newStudent };
+}
 
-    // 获取可用宿舍列表
-    async available() {
-      await delay(200);
-      const dorms = getStorageData(STORAGE_KEYS.DORMS, DEFAULT_DORMS);
-      return dorms.filter(d => d.status === 'available' && d.currentCount < d.capacity);
-    },
+function updateStudent(student) {
+    const students = getStudents();
+    const idx = students.findIndex(s => s.studentId === student.studentId);
+    if (idx === -1) return { success: false, message: '学生不存在' };
 
-    // 获取单个宿舍信息
-    async getById(id) {
-      await delay(200);
-      const dorms = getStorageData(STORAGE_KEYS.DORMS, DEFAULT_DORMS);
-      const dorm = dorms.find(d => d.dormId === id || d.id === id);
-      if (dorm) {
-        return { ...dorm };
-      }
-      return { success: false, message: '宿舍不存在' };
-    },
+    const oldDormId = students[idx].dormId;
+    const newDormId = parseInt(student.dormId) || 0;
+    let dormNo = '', buildingNo = '';
+    if (newDormId > 0) {
+        const dorm = getDorms().find(d => d.dormId === newDormId);
+        if (dorm) { dormNo = dorm.dormNo; buildingNo = dorm.buildingNo; }
+    }
 
-    // 添加宿舍
-    async add(data) {
-      await delay(400);
-      const dorms = getStorageData(STORAGE_KEYS.DORMS, DEFAULT_DORMS);
+    students[idx] = {
+        ...students[idx],
+        ...student,
+        dormId: newDormId,
+        dormNo, buildingNo
+    };
+    if (!student.password) delete students[idx].password;
+    saveStudents(students);
 
-      // 检查同一楼栋是否有相同宿舍号
-      if (dorms.some(d => d.buildingNo === data.buildingNo && d.dormNo === data.dormNo)) {
-        return { success: false, message: '该楼栋已存在相同宿舍号' };
-      }
+    if (oldDormId !== newDormId) {
+        const dorms = getDorms();
+        if (oldDormId > 0) {
+            const oi = dorms.findIndex(d => d.dormId === oldDormId);
+            if (oi !== -1) { dorms[oi].currentCount = Math.max(0, (dorms[oi].currentCount || 0) - 1); }
+        }
+        if (newDormId > 0) {
+            const ni = dorms.findIndex(d => d.dormId === newDormId);
+            if (ni !== -1) { dorms[ni].currentCount = (dorms[ni].currentCount || 0) + 1; }
+        }
+        saveDorms(dorms);
+    }
+    return { success: true };
+}
 
-      const newDorm = {
-        dormId: generateNextId(dorms, 'dormId'),
-        buildingNo: data.buildingNo,
-        dormNo: data.dormNo,
-        floorNo: data.floorNo || 1,
-        roomType: data.roomType || '4人间',
-        capacity: data.capacity || 4,
-        currentCount: data.currentCount || 0,
-        status: data.status || 'available',
-        createdAt: new Date().toISOString()
-      };
+function deleteStudent(studentId) {
+    let students = getStudents();
+    const student = students.find(s => s.studentId === studentId);
+    if (!student) return { success: false, message: '学生不存在' };
 
-      dorms.push(newDorm);
-      setStorageData(STORAGE_KEYS.DORMS, dorms);
+    if (student.dormId && student.dormId > 0) {
+        const dorms = getDorms();
+        const idx = dorms.findIndex(d => d.dormId === student.dormId);
+        if (idx !== -1) { dorms[idx].currentCount = Math.max(0, (dorms[idx].currentCount || 0) - 1); saveDorms(dorms); }
+    }
 
-      return { success: true, message: '添加成功' };
-    },
+    students = students.filter(s => s.studentId !== studentId);
+    saveStudents(students);
+    return { success: true };
+}
 
-    // 更新宿舍
-    async update(data) {
-      await delay(300);
-      const dorms = getStorageData(STORAGE_KEYS.DORMS, DEFAULT_DORMS);
-      const index = dorms.findIndex(d => d.dormId === data.dormId || d.id === data.dormId);
+function moveOutStudent(studentId) {
+    const students = getStudents();
+    const idx = students.findIndex(s => s.studentId === studentId);
+    if (idx === -1) return { success: false, message: '学生不存在' };
 
-      if (index === -1) {
-        return { success: false, message: '宿舍不存在' };
-      }
+    if (students[idx].dormId && students[idx].dormId > 0) {
+        const dorms = getDorms();
+        const di = dorms.findIndex(d => d.dormId === students[idx].dormId);
+        if (di !== -1) { dorms[di].currentCount = Math.max(0, (dorms[di].currentCount || 0) - 1); saveDorms(dorms); }
+    }
 
-      dorms[index] = { ...dorms[index], ...data };
-      setStorageData(STORAGE_KEYS.DORMS, dorms);
+    students[idx].status = '退宿';
+    students[idx].dormId = 0;
+    students[idx].dormNo = '';
+    students[idx].buildingNo = '';
+    saveStudents(students);
+    return { success: true };
+}
 
-      return { success: true, message: '更新成功' };
-    },
+// ========== 宿舍管理 ==========
+function getDormPage(page, size, keyword) {
+    let list = getDorms();
+    if (keyword) {
+        const kw = keyword.toLowerCase();
+        list = list.filter(d =>
+            d.dormNo.toLowerCase().includes(kw) ||
+            d.buildingNo.toLowerCase().includes(kw)
+        );
+    }
+    const total = list.length;
+    const start = (page - 1) * size;
+    const pageList = list.slice(start, start + size);
+    return { list: pageList, total, page, size, totalPages: Math.ceil(total / size) || 1 };
+}
 
-    // 删除宿舍
-    async remove(id) {
-      await delay(300);
-      const dorms = getStorageData(STORAGE_KEYS.DORMS, DEFAULT_DORMS);
-      const index = dorms.findIndex(d => d.dormId === id || d.id === id);
+function addDorm(dorm) {
+    const dorms = getDorms();
+    const newId = dorms.length > 0 ? Math.max(...dorms.map(d => d.dormId)) + 1 : 1;
+    const newDorm = {
+        dormId: newId,
+        dormNo: dorm.dormNo,
+        buildingNo: dorm.buildingNo,
+        capacity: parseInt(dorm.capacity) || 4,
+        currentCount: parseInt(dorm.currentCount) || 0,
+        roomType: dorm.roomType || '',
+        fee: parseFloat(dorm.fee) || 0
+    };
+    dorms.push(newDorm);
+    saveDorms(dorms);
+    return { success: true, dorm: newDorm };
+}
 
-      if (index === -1) {
-        return { success: false, message: '宿舍不存在' };
-      }
+function updateDorm(dorm) {
+    const dorms = getDorms();
+    const idx = dorms.findIndex(d => d.dormId === dorm.dormId);
+    if (idx === -1) return { success: false, message: '宿舍不存在' };
+    dorms[idx] = { ...dorms[idx], ...dorm };
+    saveDorms(dorms);
+    return { success: true };
+}
 
-      // 检查是否还有学生
-      const students = getStorageData(STORAGE_KEYS.STUDENTS, DEFAULT_STUDENTS);
-      const hasStudents = students.some(s => s.dormId === id && s.status !== '退宿');
-      if (hasStudents) {
+function deleteDorm(dormId) {
+    let dorms = getDorms();
+    const dorm = dorms.find(d => d.dormId === dormId);
+    if (!dorm) return { success: false, message: '宿舍不存在' };
+    if ((dorm.currentCount || 0) > 0) {
         return { success: false, message: '该宿舍还有学生入住，无法删除' };
-      }
-
-      dorms.splice(index, 1);
-      setStorageData(STORAGE_KEYS.DORMS, dorms);
-
-      return { success: true, message: '删除成功' };
     }
-  };
+    dorms = dorms.filter(d => d.dormId !== dormId);
+    saveDorms(dorms);
+    return { success: true };
+}
 
-  // ============ 宿管相关 API ============
+// ========== 宿管管理 ==========
+function getDormAdminPage(page, size, keyword) {
+    let list = getDormAdmins();
+    if (keyword) {
+        const kw = keyword.toLowerCase();
+        list = list.filter(a =>
+            a.adminNo.toLowerCase().includes(kw) ||
+            a.name.toLowerCase().includes(kw) ||
+            (a.buildingNo && a.buildingNo.toLowerCase().includes(kw))
+        );
+    }
+    const total = list.length;
+    const start = (page - 1) * size;
+    const pageList = list.slice(start, start + size);
+    return { list: pageList, total, page, size, totalPages: Math.ceil(total / size) || 1 };
+}
 
-  const MockAdminAPI = {
-    // 宿管登录
-    async login(adminNo, password) {
-      await delay(500);
-      const admins = getStorageData(STORAGE_KEYS.ADMINS, DEFAULT_ADMINS);
-      const admin = admins.find(a => a.adminNo === adminNo && a.password === password);
+function addDormAdmin(admin) {
+    const admins = getDormAdmins();
+    if (admins.find(a => a.adminNo === admin.adminNo)) {
+        return { success: false, message: '工号已存在' };
+    }
+    const newId = admins.length > 0 ? Math.max(...admins.map(a => a.id)) + 1 : 1;
+    const newAdmin = {
+        id: newId,
+        adminNo: admin.adminNo,
+        name: admin.name,
+        buildingNo: admin.buildingNo || '',
+        role: admin.role || '普通宿管',
+        phone: admin.phone || '',
+        email: admin.email || '',
+        password: admin.password || '123456'
+    };
+    admins.push(newAdmin);
+    saveDormAdmins(admins);
+    return { success: true, admin: newAdmin };
+}
 
-      if (admin) {
-        return { success: true, adminNo: admin.adminNo, name: admin.name, role: admin.role, buildingNo: admin.buildingNo, message: '登录成功' };
-      }
-      return { success: false, message: '工号或密码错误' };
-    },
+function updateDormAdmin(admin) {
+    const admins = getDormAdmins();
+    const idx = admins.findIndex(a => a.id === admin.id);
+    if (idx === -1) return { success: false, message: '宿管不存在' };
+    admins[idx] = { ...admins[idx], ...admin };
+    if (!admin.password) delete admins[idx].password;
+    saveDormAdmins(admins);
+    return { success: true };
+}
 
-    // 检查登录状态
-    async checkLogin() {
-      await delay(100);
-      const loginType = sessionStorage.getItem('loginType');
-      if (loginType === 'dormAdmin') {
-        return {
-          success: true,
-          adminNo: sessionStorage.getItem('adminNo') || '',
-          name: sessionStorage.getItem('name') || '',
-          role: sessionStorage.getItem('role') || '普通宿管',
-          buildingNo: sessionStorage.getItem('buildingNo') || ''
-        };
-      }
-      return { success: false };
-    },
+function deleteDormAdmin(id) {
+    let admins = getDormAdmins();
+    admins = admins.filter(a => a.id !== id);
+    saveDormAdmins(admins);
+    return { success: true };
+}
 
-    // 获取宿管列表
-    async list() {
-      await delay(300);
-      const admins = getStorageData(STORAGE_KEYS.ADMINS, DEFAULT_ADMINS);
-      return admins.map(a => {
-        const info = { ...a };
-        delete info.password;
-        return info;
-      });
-    },
-
-    // 获取单个宿管
-    async getById(id) {
-      await delay(200);
-      const admins = getStorageData(STORAGE_KEYS.ADMINS, DEFAULT_ADMINS);
-      const admin = admins.find(a => a.adminId === id || a.id === id);
-      if (admin) {
-        const info = { ...admin };
-        delete info.password;
-        return info;
-      }
-      return { success: false, message: '宿管不存在' };
-    },
-
-    // 添加宿管
-    async add(data) {
-      await delay(400);
-      const admins = getStorageData(STORAGE_KEYS.ADMINS, DEFAULT_ADMINS);
-
-      if (admins.some(a => a.adminNo === data.adminNo)) {
-        return { success: false, message: '该工号已存在' };
-      }
-
-      const newAdmin = {
-        adminId: generateNextId(admins, 'adminId'),
-        adminNo: data.adminNo,
+// ========== 注册 ==========
+function studentRegister(data) {
+    const students = getStudents();
+    if (students.find(s => s.studentNo === data.studentNo)) {
+        return { success: false, message: '学号已存在' };
+    }
+    const newId = students.length > 0 ? Math.max(...students.map(s => s.studentId)) + 1 : 1;
+    const newStudent = {
+        studentId: newId,
+        studentNo: data.studentNo,
         name: data.name,
+        gender: data.gender || '',
+        className: data.className || '',
         phone: data.phone || '',
         email: data.email || '',
-        buildingNo: data.buildingNo || '',
-        role: data.role || '普通宿管',
-        password: data.password || '123456',
-        createdAt: new Date().toISOString()
-      };
+        dormId: 0,
+        dormNo: '',
+        buildingNo: '',
+        status: '在校',
+        password: data.password
+    };
+    students.push(newStudent);
+    saveStudents(students);
+    return { success: true };
+}
 
-      admins.push(newAdmin);
-      setStorageData(STORAGE_KEYS.ADMINS, admins);
+// ========== 统计 ==========
+function getStats() {
+    const students = getStudents();
+    const dorms = getDorms();
+    const admins = getDormAdmins();
+    const assignedDorms = dorms.filter(d => (d.currentCount || 0) > 0).length;
+    return {
+        studentCount: students.length,
+        dormCount: dorms.length,
+        adminCount: admins.length,
+        assignedCount: assignedDorms
+    };
+}
 
-      return { success: true, message: '添加成功' };
-    },
-
-    // 更新宿管
-    async update(data) {
-      await delay(300);
-      const admins = getStorageData(STORAGE_KEYS.ADMINS, DEFAULT_ADMINS);
-      const index = admins.findIndex(a => a.adminId === data.adminId || a.id === data.adminId);
-
-      if (index === -1) {
-        return { success: false, message: '宿管不存在' };
-      }
-
-      // 保留原密码
-      const originalPassword = admins[index].password;
-      admins[index] = { ...admins[index], ...data, password: data.password || originalPassword };
-      setStorageData(STORAGE_KEYS.ADMINS, admins);
-
-      return { success: true, message: '更新成功' };
-    },
-
-    // 删除宿管
-    async remove(id) {
-      await delay(300);
-      const admins = getStorageData(STORAGE_KEYS.ADMINS, DEFAULT_ADMINS);
-      const index = admins.findIndex(a => a.adminId === id || a.id === id);
-
-      if (index === -1) {
-        return { success: false, message: '宿管不存在' };
-      }
-
-      admins.splice(index, 1);
-      setStorageData(STORAGE_KEYS.ADMINS, admins);
-
-      return { success: true, message: '删除成功' };
+// ========== 工具函数 ==========
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        top: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 24px;
+        border-radius: 8px;
+        z-index: 9999;
+        font-size: 14px;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: toastIn 0.3s ease;
+    `;
+    if (type === 'success') {
+        toast.style.background = '#fff';
+        toast.style.color = '#000';
+        toast.style.border = '2px solid #000';
+    } else {
+        toast.style.background = '#fff';
+        toast.style.color = '#dc2626';
+        toast.style.border = '2px solid #dc2626';
     }
-  };
+    toast.innerHTML = `<i class="fa fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}" style="margin-right:8px;"></i>${message}`;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.style.animation = 'toastOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 2000);
+}
 
-  // ============ 重置数据 ============
-  function resetAllData() {
-    localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(DEFAULT_STUDENTS));
-    localStorage.setItem(STORAGE_KEYS.DORMS, JSON.stringify(DEFAULT_DORMS));
-    localStorage.setItem(STORAGE_KEYS.ADMINS, JSON.stringify(DEFAULT_ADMINS));
-    sessionStorage.clear();
-  }
-
-  // ============ 初始化数据（首次加载时） ============
-  function initData() {
-    if (!localStorage.getItem(STORAGE_KEYS.STUDENTS)) {
-      localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(DEFAULT_STUDENTS));
+// 添加动画样式
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes toastIn {
+        from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        to { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
-    if (!localStorage.getItem(STORAGE_KEYS.DORMS)) {
-      localStorage.setItem(STORAGE_KEYS.DORMS, JSON.stringify(DEFAULT_DORMS));
+    @keyframes toastOut {
+        from { opacity: 1; transform: translateX(-50%) translateY(0); }
+        to { opacity: 0; transform: translateX(-50%) translateY(-20px); }
     }
-    if (!localStorage.getItem(STORAGE_KEYS.ADMINS)) {
-      localStorage.setItem(STORAGE_KEYS.ADMINS, JSON.stringify(DEFAULT_ADMINS));
-    }
-  }
-
-  // 立即初始化
-  initData();
-
-  // ============ 导出到全局 ============
-  global.MockData = {
-    student: MockStudentAPI,
-    dorm: MockDormAPI,
-    admin: MockAdminAPI,
-    resetAllData: resetAllData,
-    initData: initData
-  };
-
-})(window);
+`;
+document.head.appendChild(style);
