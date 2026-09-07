@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="pageTitle">Personal Blog</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<header class="navbar">
+  <div class="nav-inner">
+    <a href="#" class="brand">
+      <span class="logo-dot"></span>
+      <span class="brand-name">Personal Blog</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#work" class="nav-link active" data-i18n="navWorks">作品集</a>
+      <a href="#about" class="nav-link" data-i18n="navAbout">关于</a>
+    </nav>
+    <div class="nav-actions">
+      <select class="lang-switch" id="langSwitch" aria-label="语言切换">
+        <option value="zh" selected>中文</option>
+        <option value="en">English</option>
+      </select>
+      <div class="avatar-btn" title="头像">
+        <img src="avatar.png" alt="头像" id="avatarImg">
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-text">
+      <p class="hero-role" data-i18n="heroRole">学生 / 开发者</p>
+      <p class="hero-name" data-i18n="heroName">易雯静 · 湖南郴州</p>
+      <h1 class="hero-quote">"The pleasure of finding things out."</h1>
+      <a href="#about" class="hero-more" data-i18n="heroMore">了解更多 →</a>
+    </div>
+    <div class="hero-avatar">
+      <img src="avatar.png" alt="头像大图" id="heroAvatar">
+      <p class="mobile-name" data-i18n="heroName">易雯静 · 湖南郴州</p>
+    </div>
+  </section>
+
+  <section id="work" class="section">
+    <div class="section-head">
+      <h2 data-i18n="worksTitle">作品集</h2>
+      <a href="#" class="more-link" data-i18n="worksMore">所有作品 →</a>
+    </div>
+    <div class="work-grid">
+      <a href="cinema-demo/index.html" target="_blank" class="work-card-link">
+        <article class="work-card">
+          <div class="work-thumb work-thumb-cinema">
+            <img src="cinema-screenshot.png" alt="电影票管理系统" class="work-screenshot">
+          </div>
+          <div class="work-body">
+            <h3 data-i18n="cinemaTitle">电影票管理系统 <span class="demo-tag" data-i18n="demoTag">在线演示 →</span></h3>
+            <p data-i18n="cinemaDesc">基于 Java Servlet + MySQL 的电影票选座购票系统，支持电影浏览、选座、支付、订单管理等完整功能。</p>
+            <div class="tags"><span>Java</span><span>Servlet</span><span>MySQL</span><span>HTML/CSS</span></div>
+          </div>
+        </article>
+      </a>
+      <a href="dormitory-demo/index.html" target="_blank" class="work-card-link">
+        <article class="work-card">
+          <div class="work-thumb work-thumb-dormitory">
+            <img src="dormitory-screenshot.png" alt="宿舍管理系统" class="work-screenshot">
+          </div>
+          <div class="work-body">
+            <h3 data-i18n="dormitoryTitle">宿舍管理系统 <span class="demo-tag" data-i18n="demoTag">在线演示 →</span></h3>
+            <p data-i18n="dormitoryDesc">基于 Java Web 的宿舍管理系统，支持学生和宿管双角色，涵盖学生信息、宿舍分配、退宿管理等功能。</p>
+            <div class="tags"><span>Java</span><span>JSP</span><span>MySQL</span><span>Tailwind</span></div>
+          </div>
+        </article>
+      </a>
+    </div>
+  </section>
+
+  <section id="about" class="section">
+    <div class="about-grid">
+      <div>
+        <h2 data-i18n="aboutEdu">教育经历</h2>
+        <div class="timeline">
+          <div class="timeline-item">
+            <span class="time">2024 - 2027</span>
+            <p><strong data-i18n="schoolName">郴州思科职业学院</strong> · <span data-i18n="schoolMajor">计算机专业技术</span> · <span data-i18n="schoolDegree">专科</span></p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h2 data-i18n="aboutSkills">技术栈</h2>
+        <div class="skill-group"><h4 data-i18n="skillLang">编程语言</h4><div class="tags"><span>HTML</span><span>HTML5</span><span>CSS</span><span>Java</span><span>JavaScript</span></div></div>
+        <div class="skill-group"><h4 data-i18n="skillFront">前端 / 后端</h4><div class="tags"><span>Servlet</span><span>JSP</span><span>MySQL</span></div></div>
+        <div class="skill-group"><h4 data-i18n="skillOps">系统与运维</h4><div class="tags"><span>Linux</span></div></div>
+        <div class="skill-group"><h4 data-i18n="skillDesign">设计 / 多媒体</h4><div class="tags"><span>Photoshop</span><span>Illustrator</span><span>Premiere Pro</span></div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
