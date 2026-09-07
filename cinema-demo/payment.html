@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>支付订单 - 电影票选座系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="mock-data.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --accent: #f72585;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --hover-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--dark) 0%, #16213e 100%);
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: white;
+            transition: var(--transition);
+        }
+
+        .logo:hover {
+            transform: translateY(-2px);
+        }
+
+        .logo-icon {
+            font-size: 32px;
+            background: linear-gradient(135deg, var(--accent), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #c3cfe2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            padding: 40px 0 60px;
+        }
+
+        .content-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-description {
+            color: var(--gray);
+            font-size: 18px;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .payment-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .order-review {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 30px;
+        }
+
+        .review-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .review-title i {
+            color: var(--primary);
+        }
+
+        .order-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .detail-item {
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.05), rgba(114, 9, 183, 0.05));
+            border-radius: 12px;
+        }
+
+        .detail-label {
+            display: block;
+            font-size: 12px;
+            color: var(--gray);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .seats-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .seat-tag {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .seat-tag.vip {
+            background: linear-gradient(135deg, var(--accent), var(--danger));
+        }
+
+        .total-amount {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid var(--light-gray);
+        }
+
+        .payment-methods {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .methods-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .methods-title i {
+            color: var(--primary);
+        }
+
+        .method-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .method-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            border: 2px solid var(--light-gray);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .method-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.15);
+        }
+
+        .method-item.selected {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.08), rgba(114, 9, 183, 0.05));
+        }
+
+        .method-item.selected::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        .method-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .method-icon.alipay {
+            background: linear-gradient(135deg, #00a0e9, #0066cc);
+        }
+
+        .method-icon.wechat {
+            background: linear-gradient(135deg, #07c160, #059e4f);
+        }
+
+        .method-info {
+            flex: 1;
+        }
+
+        .method-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .method-desc {
+            color: var(--gray);
+            font-size: 13px;
+        }
+
+        .qr-code-section {
+            text-align: center;
+            padding: 25px;
+            display: none;
+            background: var(--light);
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .qr-code-section.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .qr-code-img {
+            width: 180px;
+            height: 180px;
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .qr-code-img img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .timer {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .btn-confirm {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--accent), var(--danger));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-confirm:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(242, 5, 133, 0.3);
+        }
+
+        .btn-confirm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .message {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            z-index: 9999;
+            opacity: 0;
+            transform: translateX(100px);
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+
+        .message.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .message.success {
+            background: linear-gradient(135deg, #00b894, #00a885);
+        }
+
+        .message.error {
+            background: linear-gradient(135deg, #ff4757, #ff3838);
+        }
+
+        .message.warning {
+            background: linear-gradient(135deg, #fdcb6e, #f39c12);
+        }
+
+        .message.info {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .payment-success {
+            text-align: center;
+            padding: 40px 20px;
+            display: none;
+        }
+
+        .payment-success.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #00b894, #00a885);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+            margin: 0 auto 20px;
+            animation: scaleIn 0.5s ease;
+        }
+
+        @keyframes scaleIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .success-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .success-desc {
+            color: var(--gray);
+            margin-bottom: 25px;
+        }
+
+        .success-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-success {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-success.primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-success.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn-success.secondary {
+            background: var(--light);
+            color: var(--dark);
+            border: 2px solid var(--light-gray);
+        }
+
+        .btn-success.secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .order-number-display {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary);
+            background: var(--light);
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .payment-container {
+                padding: 0 15px;
+            }
+
+            .order-review, .payment-methods {
+                padding: 20px;
+            }
+
+            .page-title {
+                font-size: 28px;
+            }
+
+            .total-amount {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="container header-container">
+        <a href="index.html" class="logo">
+            <i class="fas fa-film logo-icon"></i>
+            <span class="logo-text">嘻囔电影</span>
+        </a>
+
+        <button class="back-btn" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i> 返回选座
+        </button>
+    </div>
+</header>
+
+<main class="container main-content">
+    <div class="content-header">
+        <h1 class="page-title">确认支付</h1>
+        <p class="page-description">请确认订单信息并完成支付</p>
+    </div>
+
+    <div class="payment-container">
+        <div class="order-review">
+            <h3 class="review-title"><i class="fas fa-receipt"></i> 订单详情</h3>
+            <div id="orderDetails">
+            </div>
+        </div>
+
+        <div class="payment-methods">
+            <h3 class="methods-title"><i class="fas fa-credit-card"></i> 选择支付方式</h3>
+
+            <div class="method-list">
+                <div class="method-item" id="alipayMethod" onclick="selectPaymentMethod('alipay')">
+                    <div class="method-icon alipay">
+                        <i class="fab fa-alipay"></i>
+                    </div>
+                    <div class="method-info">
+                        <div class="method-name">支付宝支付</div>
+                        <div class="method-desc">推荐支付宝用户使用，安全快捷</div>
+                    </div>
+                </div>
+
+                <div class="method-item" id="wechatMethod" onclick="selectPaymentMethod('wechat')">
+                    <div class="method-icon wechat">
+                        <i class="fab fa-weixin"></i>
+                    </div>
+                    <div class="method-info">
+                        <div class="method-name">微信支付</div>
+                        <div class="method-desc">推荐微信用户使用，方便快捷</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="qr-code-section" id="qrCodeSection">
+                <div class="qr-code-img">
+                    <img id="qrImage" src="" alt="支付二维码">
+                </div>
+                <p style="margin-bottom: 10px; color: var(--dark); font-weight: 500;">请使用手机扫描二维码完成支付</p>
+                <p style="color: var(--gray); font-size: 14px;">支付剩余时间: <span class="timer" id="timer">15:00</span></p>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <p style="color: var(--gray);">正在处理支付，请稍候...</p>
+            </div>
+
+            <div class="payment-success" id="paymentSuccess">
+                <div class="success-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="success-title">支付成功！</div>
+                <div class="order-number-display" id="successOrderId"></div>
+                <div class="success-desc">您的电影票已购买成功，快去看看吧~</div>
+                <div class="success-actions">
+                    <button class="btn-success primary" onclick="viewTicket()">
+                        <i class="fas fa-ticket-alt"></i> 查看电影票
+                    </button>
+                    <button class="btn-success secondary" onclick="goToOrders()">
+                        <i class="fas fa-list"></i> 我的订单
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn-confirm" id="payBtn" onclick="processPayment()">
+                <i class="fas fa-lock"></i>
+                <span id="payBtnText">请先选择支付方式</span>
+            </button>
+        </div>
+    </div>
+</main>
+
+<div id="message" class="message"></div>
+
+<script>
+    let orderInfo = null;
+    let selectedMethod = null;
+    let countdown = 15 * 60;
+    let countdownInterval = null;
+    let currentOrderId = null;
+    let isProcessing = false;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadOrderInfo();
+    });
+
+    function goBack() {
+        if (isProcessing) {
+            showPaymentMessage('支付处理中，请稍候...', 'warning');
+            return;
+        }
+        if (confirm('确定要返回选座页面吗？您的座位信息将被保留。')) {
+            window.location.href = 'seating.html';
+        }
+    }
+
+    function showPaymentMessage(message, type = 'info') {
+        const messageEl = document.getElementById('message');
+        messageEl.textContent = message;
+        messageEl.className = `message ${type}`;
+        messageEl.classList.add('show');
+
+        setTimeout(() => {
+            messageEl.classList.remove('show');
+        }, 3000);
+    }
+
+    function loadOrderInfo() {
+        try {
+            const orderData = sessionStorage.getItem(STORAGE_KEYS.ORDER_INFO);
+
+            if (!orderData) {
+                showPaymentMessage('未找到订单信息，请重新选座', 'error');
+                setTimeout(() => window.location.href = 'seating.html', 2000);
+                return;
+            }
+
+            orderInfo = JSON.parse(orderData);
+            renderOrderReview();
+        } catch (error) {
+            console.error('加载订单信息失败:', error);
+            showPaymentMessage('加载订单信息失败，请重试', 'error');
+        }
+    }
+
+    function renderOrderReview() {
+        if (!orderInfo) return;
+
+        const orderDetails = document.getElementById('orderDetails');
+        const movie = orderInfo.movie || {};
+        const seats = orderInfo.seats || [];
+        const totalPrice = orderInfo.totalPrice || 0;
+        const seatCount = seats.length;
+
+        let html = `
+            <div class="order-details-grid">
+                <div class="detail-item">
+                    <span class="detail-label">电影名称</span>
+                    <span class="detail-value">${movie.title || '未知电影'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">场次时间</span>
+                    <span class="detail-value">${orderInfo.showTime || '未知'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">影厅</span>
+                    <span class="detail-value">${orderInfo.hallName || '未知'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">座位数量</span>
+                    <span class="detail-value">${seatCount} 个</span>
+                </div>
+            </div>
+        `;
+
+        if (seatCount > 0) {
+            html += `
+                <div>
+                    <span class="detail-label" style="display: block; margin-bottom: 10px; font-weight: 600; color: var(--dark);">已选座位</span>
+                    <div class="seats-display">
+            `;
+
+            seats.forEach(seat => {
+                const isVIP = seat.seatType === 'vip' || seat.seatType === 'VIP';
+                html += `
+                    <span class="seat-tag ${isVIP ? 'vip' : ''}">
+                        ${seat.rowNum || '?'}排${seat.colNum || '?'}座
+                        ${isVIP ? ' VIP' : ''}
+                    </span>
+                `;
+            });
+
+            html += `
+                    </div>
+                </div>
+            `;
+        }
+
+        html += `
+            <div class="total-amount">
+                <span><i class="fas fa-yen-sign"></i> 实付金额:</span>
+                <span>¥ ${totalPrice.toFixed(2)}</span>
+            </div>
+        `;
+
+        orderDetails.innerHTML = html;
+    }
+
+    function selectPaymentMethod(method) {
+        if (isProcessing) return;
+
+        selectedMethod = method;
+
+        document.querySelectorAll('.method-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+
+        document.getElementById(`${method}Method`).classList.add('selected');
+
+        const qrCodeSection = document.getElementById('qrCodeSection');
+        const qrImage = document.getElementById('qrImage');
+
+        if (method === 'alipay') {
+            qrImage.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=alipay_demo_payment';
+        } else if (method === 'wechat') {
+            qrImage.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=wechatpay_demo_payment';
+        }
+
+        qrCodeSection.classList.add('show');
+        startCountdown();
+
+        const payBtn = document.getElementById('payBtn');
+        const payBtnText = document.getElementById('payBtnText');
+        payBtn.disabled = false;
+        const totalPrice = orderInfo ? orderInfo.totalPrice || 0 : 0;
+        payBtnText.textContent = `确认支付 ¥${totalPrice.toFixed(2)}`;
+    }
+
+    function startCountdown() {
+        clearInterval(countdownInterval);
+        countdown = 15 * 60;
+
+        countdownInterval = setInterval(() => {
+            countdown--;
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                showPaymentMessage('支付超时，请重新支付', 'error');
+                document.getElementById('qrCodeSection').classList.remove('show');
+                document.getElementById('payBtn').disabled = true;
+                document.getElementById('payBtnText').textContent = '支付已超时';
+                return;
+            }
+
+            const minutes = Math.floor(countdown / 60);
+            const seconds = countdown % 60;
+            document.getElementById('timer').textContent =
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }, 1000);
+    }
+
+    async function processPayment() {
+        if (!selectedMethod) {
+            showPaymentMessage('请选择支付方式', 'warning');
+            return;
+        }
+
+        if (isProcessing) return;
+
+        const currentUser = getCurrentUser();
+        if (!currentUser) {
+            showPaymentMessage('请先登录再进行支付', 'warning');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
+            return;
+        }
+
+        isProcessing = true;
+        const payBtn = document.getElementById('payBtn');
+        const payBtnText = document.getElementById('payBtnText');
+        const loadingEl = document.getElementById('loading');
+        const qrSection = document.getElementById('qrCodeSection');
+
+        payBtn.disabled = true;
+        payBtnText.textContent = '支付处理中...';
+        loadingEl.style.display = 'block';
+        qrSection.style.opacity = '0.5';
+
+        clearInterval(countdownInterval);
+
+        try {
+            // 1. 创建订单
+            const createData = await mockCreateOrder({
+                userId: currentUser.userId,
+                userName: currentUser.username || currentUser.fullName || '用户',
+                movieId: orderInfo.movie ? orderInfo.movie.id : 0,
+                movieTitle: orderInfo.movie ? orderInfo.movie.title : '未知电影',
+                hallId: orderInfo.hallId || 1,
+                hallName: orderInfo.hallName || '默认影厅',
+                showTime: orderInfo.showTime || '19:30',
+                seats: orderInfo.seats || [],
+                totalPrice: orderInfo.totalPrice || 0,
+                ticketPrice: orderInfo.ticketPrice || 45,
+                paymentMethod: selectedMethod
+            });
+
+            if (!createData.success) {
+                throw new Error(createData.message || '订单创建失败');
+            }
+
+            const orderNumber = createData.data.orderId;
+            currentOrderId = orderNumber;
+
+            // 2. 模拟支付过程
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // 3. 支付
+            const payData = await mockPayOrder(orderNumber, selectedMethod);
+
+            if (payData.success) {
+                // 支付成功
+                loadingEl.style.display = 'none';
+                qrSection.style.display = 'none';
+                payBtn.style.display = 'none';
+
+                const successEl = document.getElementById('paymentSuccess');
+                document.getElementById('successOrderId').textContent = `订单号：${orderNumber}`;
+                successEl.classList.add('show');
+
+                showPaymentMessage('支付成功！', 'success');
+
+                // 保存订单到sessionStorage供其他页面使用
+                sessionStorage.setItem(STORAGE_KEYS.CURRENT_ORDER, JSON.stringify(payData.data));
+                sessionStorage.setItem('currentOrderId', orderNumber);
+            } else {
+                throw new Error(payData.message || '支付失败');
+            }
+
+        } catch (error) {
+            console.error('支付失败:', error);
+            showPaymentMessage(error.message || '支付失败，请重试', 'error');
+            payBtn.disabled = false;
+            payBtnText.textContent = '重新支付';
+            loadingEl.style.display = 'none';
+            qrSection.style.opacity = '1';
+            isProcessing = false;
+        }
+    }
+
+    function viewTicket() {
+        // 跳转到订单页面查看
+        showPaymentMessage('正在跳转到订单页面...', 'info');
+        setTimeout(() => {
+            window.location.href = 'orders.html';
+        }, 800);
+    }
+
+    function goToOrders() {
+        window.location.href = 'orders.html';
+    }
+</script>
+</body>
+</html>
