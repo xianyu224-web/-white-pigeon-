@@ -4,6 +4,7 @@ const translations = {
     pageTitle: 'Personal Blog',
     navWorks: '作品集',
     navAbout: '关于',
+    navContact: '联系',
     heroRole: '学生 / 开发者',
     heroName: '易雯静 · 湖南郴州',
     heroMore: '了解更多 →',
@@ -22,12 +23,16 @@ const translations = {
     skillLang: '编程语言',
     skillFront: '前端 / 后端',
     skillOps: '系统与运维',
-    skillDesign: '设计 / 多媒体'
+    skillDesign: '设计 / 多媒体',
+    contactTitle: '联系方式',
+    contactEmail: '邮箱',
+    contactWechat: '微信'
   },
   en: {
     pageTitle: 'Personal Blog',
     navWorks: 'Portfolio',
     navAbout: 'About',
+    navContact: 'Contact',
     heroRole: 'Student / Developer',
     heroName: 'Yi Wenjing · Chenzhou, Hunan',
     heroMore: 'Learn More →',
@@ -46,7 +51,10 @@ const translations = {
     skillLang: 'Programming Languages',
     skillFront: 'Frontend / Backend',
     skillOps: 'Systems & DevOps',
-    skillDesign: 'Design / Multimedia'
+    skillDesign: 'Design / Multimedia',
+    contactTitle: 'Contact',
+    contactEmail: 'Email',
+    contactWechat: 'WeChat'
   }
 };
 
@@ -75,6 +83,23 @@ if (langSwitch) {
   });
 }
 setLanguage(savedLang);
+
+// ===== 滚动触发入场动画 =====
+const revealItems = document.querySelectorAll('.scroll-reveal-item');
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('revealed');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, {
+  threshold: 0.15,
+  rootMargin: '0px 0px -50px 0px'
+});
+
+revealItems.forEach(item => revealObserver.observe(item));
 
 // ===== 导航栏：滚动时自动高亮当前区块 =====
 const sections = document.querySelectorAll('main section[id]');

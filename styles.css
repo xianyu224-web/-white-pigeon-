@@ -15,8 +15,7 @@ img{display:block}
 .nav-inner{max-width:var(--max);margin:0 auto;padding:0 20px;
   height:60px;display:flex;align-items:center;gap:24px}
 .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px}
-.logo-dot{width:22px;height:22px;border-radius:7px;
-  background:linear-gradient(135deg,#2563eb,#7c3aed);display:inline-block}
+.brand-logo{width:28px;height:28px;border-radius:8px;object-fit:cover}
 .nav-links{display:flex;gap:6px;margin-left:12px}
 .nav-link{padding:6px 12px;border-radius:8px;font-size:14px;color:var(--muted);
   transition:.15s;position:relative}
@@ -91,6 +90,19 @@ main{max-width:var(--max);margin:0 auto;padding:40px 20px 80px}
 .skill-group{margin-bottom:16px}
 .skill-group h4{font-size:13px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
 
+/* 联系方式 */
+.contact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:20px}
+.contact-card{display:flex;align-items:center;gap:14px;padding:18px;
+  border:1px solid var(--border);border-radius:14px;background:#fff;transition:.18s}
+.contact-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.06);border-color:#d0d7de}
+.contact-icon{width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.contact-info h4{font-size:14px;margin-bottom:2px}
+.contact-info p{font-size:13px;color:var(--muted)}
+.contact-wechat .wechat-avatar{width:52px;height:52px;border-radius:12px;
+  image-rendering:pixelated;image-rendering:crisp-edges;flex-shrink:0}
+
 /* 标签 */
 .tags{display:flex;flex-wrap:wrap;gap:8px}
 .tags span{font-size:12.5px;padding:3px 10px;background:var(--code-bg);
@@ -114,4 +126,63 @@ main{max-width:var(--max);margin:0 auto;padding:40px 20px 80px}
   }
   .hero-text .hero-name{display:none}
   .about-grid{grid-template-columns:1fr}
+}
+
+/* ===== 入场动画 ===== */
+.fade-in{
+  opacity:0;
+  animation:fadeIn .6s ease-out forwards;
+}
+
+.fade-in-up{
+  opacity:0;
+  transform:translateY(30px);
+  animation:fadeInUp .8s ease-out forwards;
+}
+
+.delay-1{animation-delay:.15s}
+.delay-2{animation-delay:.35s}
+.delay-3{animation-delay:.55s}
+.delay-4{animation-delay:.75s}
+
+@keyframes fadeIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+
+@keyframes fadeInUp{
+  from{
+    opacity:0;
+    transform:translateY(30px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+/* 滚动触发动画 */
+.scroll-reveal-item{
+  opacity:0;
+  transform:translateY(40px);
+  transition:opacity .7s ease-out, transform .7s ease-out;
+}
+
+.scroll-reveal-item.revealed{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.scroll-reveal .scroll-reveal-item:nth-child(1){transition-delay:.1s}
+.scroll-reveal .scroll-reveal-item:nth-child(2){transition-delay:.25s}
+.scroll-reveal .scroll-reveal-item:nth-child(3){transition-delay:.4s}
+
+/* 兼容：不支持动画时直接显示 */
+@media(prefers-reduced-motion:reduce){
+  .fade-in,.fade-in-up,.scroll-reveal-item{
+    opacity:1;
+    transform:none;
+    animation:none;
+    transition:none;
+  }
 }
